@@ -1,0 +1,201 @@
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+	<style type="text/css">
+		body, html {width: 100%;height: 100%;margin:0;font-family:"微软雅黑"!important;}
+		#l-map {height:100%;}
+	</style>
+    <link href="http://cdn.bootcss.com/bootstrap/3.3.2/css/bootstrap.min.css" rel="stylesheet">
+	<script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=y7I42kWI1lRqTPmv2l5SOBU8"></script>
+	<title>公交/地铁线路查询</title>
+</head>
+<body>
+	<div class="container">
+		<div class="row">
+			<div class="col-md-4" style="margin-top:20px;">
+				<div>
+					<div class="form-group">
+					    <label for="keyword">请输入公交站名，如：“西单”：</label>
+					    <input type="text" class="form-control" id="keyword" placeholder="公交站名"  value="西单"/>
+					</div>
+					<div class="form-group">
+					    <label for="location">请输入城市名，如北京（仅作参考，如搜索泉城广场时，北京没有这个地址，一样会找到济南，但如果北京也有，就不会找济南了）：</label>
+					    <div class="row">
+					    	<div class="col-md-9"><input type="text" class="form-control" id="location" placeholder="城市名" value="北京"/></div>
+					    	<div class="col-md-3"><button id="query" class="btn btn-default">查询</button></div>
+					    </div>
+					</div>
+					<div class="panel panel-default">
+						<div class="panel-body" id="l-result"></div>
+					</div>
+					<div class="panel panel-default">
+						<div class="panel-body">
+							<p>实现代码分析参照我在博客园上的<a href="http://www.cnblogs.com/smarterplanet/p/4294821.html" target="_blank">文章</a></p>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="col-md-8">
+				<div id="l-map"></div>
+			</div>
+		</div>
+		<>
+	</div>
+	
+</body>
+</html>
+<script type="text/javascript">
+
+	var map = new BMap.Map("l-map");
+	var busStationIcon = new BMap.Icon("busstation_marker.png", new BMap.Size(10,10));
+	var busStationHover = new BMap.Icon("busstation_marker_hover.png", new BMap.Size(10,10));
+	var infoWindow = new BMap.InfoWindow("");
+	var currentLocation;
+
+	map.centerAndZoom(new BMap.Point(116.404, 39.915), 15);
+	map.enableScrollWheelZoom();
+
+	var activePolyline;			// hover bus line
+	var stationList = Array();	// hover bus line stations
+	var currentPolyline;		// hovered origin line
+
+	function addCircle(busline, busStation) {
+		var marker = new BMap.Marker(busStation.position, {icon:busStationIcon});
+		marker.setTitle(busStation.name);
+		marker.addEventListener("click", function(){
+			infoWindow.setTitle(busStation.name + " (" + busline.name + ")");
+			infoWindow.setContent("");
+			marker.openInfoWindow(infoWindow);
+
+			new BMap.LocalSearch(currentLocation, {
+			onSearchComplete: function(result) {
+				var poi;
+				for (var i = 0 ; i < result.getCurrentNumPois() ; i++) {
+					poi = result.getPoi(i);
+					if (poi.type != BMAP_POI_TYPE_NORMAL && poi.title == busStation.name) {
+						infoWindow.setContent(poi.address);
+						break;
+					}
+				}
+			}
+		}).search(busStation.name);
+		});
+		marker.addEventListener("mouseover", function(){
+			marker.setIcon(busStationHover);
+		});
+		marker.addEventListener("mouseout", function(){
+			marker.setIcon(busStationIcon);
+		});
+		map.addOverlay(marker);
+		stationList.push(marker);
+	}
+
+	function removeCircles() {
+		while (stationList.length > 0) {
+			var marker = stationList.shift();
+			map.removeOverlay(marker);
+		}
+	}
+
+	var busutil = new BMap.BusLineSearch(map,{
+		//renderOptions:{panel:"r-result"},
+		onGetBusListComplete: function(buslist) {
+			busutil.getBusLine(buslist.getBusListItem(0));
+		},
+		onGetBusLineComplete: function(busline) {
+			var color = "#" + Math.floor(Math.random() * 65535 * 256).toString(16);
+			var polyline = new BMap.Polyline(busline.getPath(), {strokeColor:color, strokeWeight:5, strokeOpacity:0.7});
+			map.addOverlay(polyline);
+			if (isMobile()) {
+				polyline.addEventListener("click", function(evt){
+					showPolyline(evt, polyline, busline);
+				});
+			} else {
+				polyline.addEventListener("mouseover", function(evt){
+					showPolyline(evt, polyline, busline);
+				});
+			}
+		}
+	});
+
+	function showPolyline(evt, polyline, busline) {
+		if (evt.target == currentPolyline) {
+			return;
+		}
+		currentPolyline = polyline;
+		map.removeOverlay(activePolyline);
+		removeCircles();
+		activePolyline = new BMap.Polyline(busline.getPath(), {strokeColor:"#3333FF", strokeWeight:5, strokeOpacity:0.9});
+		map.addOverlay(activePolyline);
+		
+		for (var i = 0 ; i < busline.getNumBusStations() ; i++) {
+			var busStation = busline.getBusStation(i);
+			addCircle(busline, busStation);
+		}
+	}
+
+	function searchComplete(result) {
+		// result instanceof LocalResult
+		// result.getPoi(i) instanceof LocalResultPoi
+		var resultPanel = document.getElementById("l-result");
+		for (var i = 0 ; i < result.getCurrentNumPois() ; i++) {
+			var poi = result.getPoi(i);
+			if (poi.type == BMAP_POI_TYPE_NORMAL) {
+				continue;
+			}
+			var link = document.createElement('a'); 
+			link.setAttribute('href', 'javascript:void(0)');
+			link.poi = poi;
+			link.onclick=function(){
+				map.clearOverlays();
+				currentLocation = this.poi.province;
+				var marker = new BMap.Marker(this.poi.point);  // 创建标注
+				map.addOverlay(marker);
+				map.panTo(this.poi.point);
+				var busNames = this.poi.address.split(';');
+				for (i = 0 ; i < busNames.length ; i++) {
+					busutil.getBusList(busNames[i]);
+				}
+			};
+			link.innerText = poi.title + " (" + poi.province + "): " + poi.tags + " : " + poi.address;
+			resultPanel.appendChild(link);
+			resultPanel.appendChild(document.createElement('br'));
+		}
+	}
+
+	document.getElementById('query').onclick=function(){
+		map.clearOverlays();
+		document.getElementById("l-result").innerHTML = "";
+		new BMap.LocalSearch(document.getElementById('location').value, {
+			onSearchComplete: searchComplete
+		}).search(document.getElementById('keyword').value);
+	};
+
+	var browser={   
+		versions:function(){           
+			var u = navigator.userAgent, app = navigator.appVersion;           
+			return {               
+			trident: u.indexOf('Trident') > -1, //IE内核               
+			presto: u.indexOf('Presto') > -1, //opera内核               
+			webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核               
+			gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+			mobile: !!u.match(/AppleWebKit.*Mobile/) || !!u.match(/Windows Phone/) || !!u.match(/Android/) || !!u.match(/MQQBrowser/),
+			ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端               
+			android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器               
+			iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者QQHD浏览器               
+			iPad: u.indexOf('iPad') > -1, //是否iPad               
+			webApp: u.indexOf('Safari') == -1 //是否web应该程序，没有头部与底部           
+			};
+		}()
+	}
+	function isMobile() {
+		return browser.versions.mobile;
+	}
+	document.writeln(" 是否为移动终端: "+browser.versions.mobile);
+	document.writeln(" ios终端: "+browser.versions.ios);
+	document.writeln(" android终端: "+browser.versions.android);
+	document.writeln(" 是否为iPhone: "+browser.versions.iPhone);
+	document.writeln(" 是否iPad: "+browser.versions.iPad);
+	document.writeln(navigator.userAgent);
+</script>

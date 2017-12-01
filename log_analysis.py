@@ -42,10 +42,6 @@ msg_regex = re.compile(r' - (.*)')
 #             f2.write(str)
 #             f2.flush
 
-
-
-
-
 table = pd.read_table('out2.txt',sep='\s+',error_bad_lines=False,skiprows={0},names=['date','time','level','thread','file','sep','msg'],nrows=1000)
 table['file'].fillna('Missing')
 table['t'] = table['date'] + " " + table['time']
