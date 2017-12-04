@@ -7,31 +7,37 @@
     <title>bus line</title>
     <link rel="stylesheet" href="http://cache.amap.com/lbs/static/main1119.css"/>
     <script src="http://cache.amap.com/lbs/static/es5.min.js"></script>
-    <script src="http://webapi.amap.com/maps?v=1.4.2&key=3168252e4c4489fe72d3eb7e1dc5bef0"></script>
+    <script src="http://webapi.amap.com/maps?v=1.4.2&key=3168252e4c4489fe72d3eb7e1dc5bef0&plugin=AMap.LineSearch"></script>
     <script type="text/javascript" src="http://cache.amap.com/lbs/static/addToolbar.js"></script>
 </head>
 <body>
 <div id="container"></div>
 
 <script language="javascript">
-    var map = new AMap.Map('container', {
+     /*
+     * 该示例主要流程分为三个步骤
+     * 1. 首先调用公交路线查询服务(lineSearch)
+     * 2. 根据返回结果解析，输出解析结果(lineSearch_Callback)
+     * 3. 在地图上绘制公交线路()
+     */
+     var map = new AMap.Map("container", {
         resizeEnable: true,
-        zoom:11,
-        center: [116.397428, 39.90923]//地图中心点
+        center: [104.074994,30.561209],//地图中心点
+        zoom: 13 //地图显示的缩放级别
     });
-
-     /*公交线路查询*/
-     function lineSearch() {
+    /*公交线路查询*/
+    function lineSearch() {
         //实例化公交线路查询类，只取回一条路线
-        print(Amap.LineSearch)
         var linesearch = new AMap.LineSearch({
             pageIndex: 1,
-            city: '北京',
+            city: '成都',
             pageSize: 1,
             extensions: 'all'
         });
+
+        
         //搜索“536”相关公交线路
-        linesearch.search('536', function(status, result) {
+        linesearch.search('517', function(status, result) {
             if (status === 'complete' && result.info === 'OK') {
                 lineSearch_Callback(result);
             } else {
@@ -80,7 +86,6 @@
         });
         map.setFitView();
     }
-    
     lineSearch();
 
 </script>
