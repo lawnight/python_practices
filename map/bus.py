@@ -1,17 +1,21 @@
 # -*- coding: utf-8 -*-
-# Python3.5
+# Python3
 #%%
 import requests ##导入requests
 from bs4 import BeautifulSoup ##导入bs4中的BeautifulSoup
 import os
+import json
+import pandas as pd
+from pandas import DataFrame
+import re
 
 headers =  {'User-Agent':'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.221 Safari/537.36 SE 2.X MetaSr 1.0'}
-all_url = 'http://beijing.8684.cn'  ##开始的URL地址
+all_url = 'http://chengdu.8684.cn'  ##开始的URL地址(切换城市，只用切换这个地址)
 start_html = requests.get(all_url, headers=headers) 
 #print (start_html.text)
 Soup = BeautifulSoup(start_html.text, 'lxml')
 all_a = Soup.find('div',class_='bus_kt_r1').find_all('a')
-Network_list = []
+Network_list = {}
 for a in all_a:
     href = a['href'] #取出a标签的href 属性
     html = all_url + href
@@ -55,14 +59,13 @@ for a in all_a:
         else:
             line_y,sites_y_list=[],[]
         information = [bus_name,bus_type,bus_time,bus_cost,bus_company,bus_update,bus_length,line_x,sites_x_list,line_y,sites_y_list]
-        Network_list.append(information)
-# 定义保存函数，将运算结果保存为txt文件
-def text_save(content,filename,mode='a'):
-    # Try to save a list variable in txt file.
-    file = open(filename,mode)
-    for i in range(len(content)):
-        file.write(str(content[i])+'\n')
-    file.close()
+        matchs = re.findall('[0-9]+',bus_name)
+        if matchs:
+            Network_list[matchs[0]] = information
+   
 
-# 输出处理后的数据     
-text_save(Network_list,'Network_bus.txt');  
+#保存        
+df = DataFrame(Network_list,index=['bus_name','bus_type','bus_time','bus_cost','bus_company','bus_update','bus_length','line_x','sites_x_list','line_y','sites_y_list'])
+df = df.T
+df.to_csv('bus_info.txt')
+"".split
