@@ -68,4 +68,3 @@ for a in all_a:
 df = DataFrame(Network_list,index=['bus_name','bus_type','bus_time','bus_cost','bus_company','bus_update','bus_length','line_x','sites_x_list','line_y','sites_y_list'])
 df = df.T
 df.to_csv('bus_info.txt')
-"".split

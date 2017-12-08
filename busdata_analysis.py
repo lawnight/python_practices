@@ -14,17 +14,18 @@ import re
 #             f2.flush
 
 
-def convert_list(x):    
+def convert_list(x):
     temp = eval(x)
     return temp
 
+def get_all_bus_station():
+    t = pd.read_csv('bus_info.csv')
+    list_column = t['sites_x_list']
+    new_column = list_column.map(convert_list)
+    total_list = new_column.sum()
+    total_series = pd.Series(total_list)
+    return total_series
 
-t = pd.read_csv('bus_info.txt', sep=',',
-                error_bad_lines=False, encoding='utf-8')
+total_series = get_all_bus_station()
 
-list_column = t['sites_x_list']
-new_column = list_column.map(convert_list)
-total_list = new_column.sum()
-total_series = pd.Series(total_list)
-
-print(total_series.value_counts())
+print (dir(total_series))
