@@ -11,8 +11,6 @@ import os
 data_info = {}
 
 # 百度
-
-
 def getBusInfo_baidu(name, count):
 
     url = r'http://api.map.baidu.com/place/v2/search'
@@ -118,6 +116,8 @@ def get_all_bus_station():
 
 save_file = 'bus_station_info2.csv'
 
+new_save_file = 'bus_station_info3.csv'
+
 if __name__ == '__main__':
     # get last station info
 
@@ -134,9 +134,10 @@ if __name__ == '__main__':
                     pass
                 else:
                     getBusInfo_baidu(name, count)
+                    time.sleep(1 / 20.0)
             except Exception as ex:
                 print(ex)
-            time.sleep(1 / 20.0)
+          
     else:
         for name, count in bus_serial.value_counts().iteritems():
             try:
@@ -148,5 +149,5 @@ if __name__ == '__main__':
 
     df = DataFrame(data_info)
     df = df.T
-    df.to_csv(save_file)
+    df.to_csv(new_save_file)
     print('finish crapy info')

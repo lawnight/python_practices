@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 # Python3
+# 在8684网站，获取所有的公交站点，和线路
 #%%
 import requests ##导入requests
 from bs4 import BeautifulSoup ##导入bs4中的BeautifulSoup
@@ -8,6 +9,12 @@ import json
 import pandas as pd
 from pandas import DataFrame
 import re
+
+# http://chengdu.8684.cn
+all_url = 'http://shenzhen.8684.cn/'  ##开始的URL地址(切换城市，只用切换这个地址)
+save_file = 'sz_station.csv'
+
+
 
 headers =  {'User-Agent':'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.221 Safari/537.36 SE 2.X MetaSr 1.0'}
 all_url = 'http://chengdu.8684.cn'  ##开始的URL地址(切换城市，只用切换这个地址)
@@ -67,4 +74,4 @@ for a in all_a:
 #保存        
 df = DataFrame(Network_list,index=['bus_name','bus_type','bus_time','bus_cost','bus_company','bus_update','bus_length','line_x','sites_x_list','line_y','sites_y_list'])
 df = df.T
-df.to_csv('bus_info.txt')
+df.to_csv(save_file)
