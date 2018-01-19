@@ -10,7 +10,7 @@ import os
 
 data_info = {}
 
-# 百度
+# 百度 web api
 def getBusInfo_baidu(name, count):
 
     url = r'http://api.map.baidu.com/place/v2/search'

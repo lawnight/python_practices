@@ -5,7 +5,7 @@
 """
 
 import re
-import urllib2  
+
 import sqlite3
 import random
 import threading
@@ -83,11 +83,11 @@ class SQLiteWraper(object):
             else:
                 cu.execute(command[0],command[1])
             conn.commit()
-        except sqlite3.IntegrityError,e:
+        except sqlite3.IntegrityError as e:
             #print e
             return -1
-        except Exception, e:
-            print e
+        except Exception as e:
+            print(e)
             return -2
         return 0
     
@@ -98,8 +98,8 @@ class SQLiteWraper(object):
         try:
             cu.execute(command)
             lists=cu.fetchall()
-        except Exception,e:
-            print e
+        except Exception as e:
+            print(e)
             pass
         return lists
 
@@ -161,29 +161,25 @@ def xiaoqu_spider(db_xq,url_page=u"http://bj.lianjia.com/xiaoqu/pg1rs%E6%98%8C%E
                 info_dict.update({u'建造时间':info[3][:4]})
             command=gen_xiaoqu_insert_command(info_dict)
             db_xq.execute(command,1)
-    except (urllib2.HTTPError, urllib2.URLError), e:
-        print e
+    except (urllib2.HTTPError, urllib2.URLError) as e:
+        print(e)
         exit(-1)
-    except Exception,e:
-        print e
+    except Exception as e:
+        print (e)
         exit(-1)
 
-    
-def do_xiaoqu_spider(db_xq,region=u"昌平"):
-    """
-    爬取大区域中的所有小区信息
-    """
-    url=u"http://bj.lianjia.com/xiaoqu/rs"+region+"/"
+def xiaoqu_spider():
+    url = r'https://cd.lianjia.com/xiaoqu/rs/'
     try:
         req = urllib2.Request(url,headers=hds[random.randint(0,len(hds)-1)])
         source_code = urllib2.urlopen(req,timeout=5).read()
         plain_text=unicode(source_code)#,errors='ignore')   
         soup = BeautifulSoup(plain_text)
-    except (urllib2.HTTPError, urllib2.URLError), e:
-        print e
+    except (urllib2.HTTPError, urllib2.URLError) as e:
+        print (e)
         return
-    except Exception,e:
-        print e
+    except Exception as e:
+        print (e)
         return
     d="d="+soup.find('div',{'class':'page-box house-lst-page-box'}).get('page-data')
     exec(d)
@@ -199,182 +195,216 @@ def do_xiaoqu_spider(db_xq,region=u"昌平"):
     #     t.start()
     # for t in threads:
     #     t.join()
-    print u"爬下了 %s 区全部的小区信息" % region
+    print (u"爬下了 %s 区全部的小区信息" % region)
 
-
-def chengjiao_spider(db_cj,url_page=u"http://bj.lianjia.com/chengjiao/pg1rs%E5%86%A0%E5%BA%AD%E5%9B%AD"):
-    """
-    爬取页面链接中的成交记录
-    """
-    try:
-        req = urllib2.Request(url_page,headers=hds[random.randint(0,len(hds)-1)])
-        source_code = urllib2.urlopen(req,timeout=10).read()
-        plain_text=unicode(source_code)#,errors='ignore')   
-        soup = BeautifulSoup(plain_text)
-    except (urllib2.HTTPError, urllib2.URLError), e:
-        print e
-        exception_write('chengjiao_spider',url_page)
-        return
-    except Exception,e:
-        print e
-        exception_write('chengjiao_spider',url_page)
-        return
     
-    cj_list=soup.findAll('div',{'class':'info-panel'})
-    for cj in cj_list:
-        info_dict={}
-        href=cj.find('a')
-        if not href:
-            continue
-        info_dict.update({u'链接':href.attrs['href']})
-        content=cj.find('h2').text.split()
-        if content:
-            info_dict.update({u'小区名称':content[0]})
-            info_dict.update({u'户型':content[1]})
-            info_dict.update({u'面积':content[2]})
-        content=unicode(cj.find('div',{'class':'con'}).renderContents().strip())
-        content=content.split('/')
-        if content:
-            info_dict.update({u'朝向':content[0].strip()})
-            info_dict.update({u'楼层':content[1].strip()})
-            if len(content)>=3:
-                content[2]=content[2].strip();
-                info_dict.update({u'建造时间':content[2][:4]}) 
-        content=cj.findAll('div',{'class':'div-cun'})
-        if content:
-            info_dict.update({u'签约时间':content[0].text})
-            info_dict.update({u'签约单价':content[1].text})
-            info_dict.update({u'签约总价':content[2].text})
-        content=cj.find('div',{'class':'introduce'}).text.strip().split()
-        if content:
-            for c in content:
-                if c.find(u'满')!=-1:
-                    info_dict.update({u'房产类型':c})
-                elif c.find(u'学')!=-1:
-                    info_dict.update({u'学区':c})
-                elif c.find(u'距')!=-1:
-                    info_dict.update({u'地铁':c})
+# def do_xiaoqu_spider(db_xq,region=u"昌平"):
+#     """
+#     爬取大区域中的所有小区信息
+#     """
+#     url=u"http://bj.lianjia.com/xiaoqu/rs"+region+"/"
+#     try:
+#         req = urllib2.Request(url,headers=hds[random.randint(0,len(hds)-1)])
+#         source_code = urllib2.urlopen(req,timeout=5).read()
+#         plain_text=unicode(source_code)#,errors='ignore')   
+#         soup = BeautifulSoup(plain_text)
+#     except (urllib2.HTTPError, urllib2.URLError), e:
+#         print e
+#         return
+#     except Exception,e:
+#         print e
+#         return
+#     d="d="+soup.find('div',{'class':'page-box house-lst-page-box'}).get('page-data')
+#     exec(d)
+#     total_pages=d['totalPage']
+    
+#     threads=[]
+#     for i in range(total_pages):
+#         url_page=u"http://bj.lianjia.com/xiaoqu/pg%drs%s/" % (i+1,region)
+#         # t=threading.Thread(target=xiaoqu_spider,args=(db_xq,url_page))
+#         # threads.append(t)
+#         xiaoqu_spider(db_xq,url_page)
+#     # for t in threads:
+#     #     t.start()
+#     # for t in threads:
+#     #     t.join()
+#     print u"爬下了 %s 区全部的小区信息" % region
+
+
+# def chengjiao_spider(db_cj,url_page=u"http://bj.lianjia.com/chengjiao/pg1rs%E5%86%A0%E5%BA%AD%E5%9B%AD"):
+#     """
+#     爬取页面链接中的成交记录
+#     """
+#     try:
+#         req = urllib2.Request(url_page,headers=hds[random.randint(0,len(hds)-1)])
+#         source_code = urllib2.urlopen(req,timeout=10).read()
+#         plain_text=unicode(source_code)#,errors='ignore')   
+#         soup = BeautifulSoup(plain_text)
+#     except (urllib2.HTTPError, urllib2.URLError), e:
+#         print e
+#         exception_write('chengjiao_spider',url_page)
+#         return
+#     except Exception,e:
+#         print e
+#         exception_write('chengjiao_spider',url_page)
+#         return
+    
+#     cj_list=soup.findAll('div',{'class':'info-panel'})
+#     for cj in cj_list:
+#         info_dict={}
+#         href=cj.find('a')
+#         if not href:
+#             continue
+#         info_dict.update({u'链接':href.attrs['href']})
+#         content=cj.find('h2').text.split()
+#         if content:
+#             info_dict.update({u'小区名称':content[0]})
+#             info_dict.update({u'户型':content[1]})
+#             info_dict.update({u'面积':content[2]})
+#         content=unicode(cj.find('div',{'class':'con'}).renderContents().strip())
+#         content=content.split('/')
+#         if content:
+#             info_dict.update({u'朝向':content[0].strip()})
+#             info_dict.update({u'楼层':content[1].strip()})
+#             if len(content)>=3:
+#                 content[2]=content[2].strip();
+#                 info_dict.update({u'建造时间':content[2][:4]}) 
+#         content=cj.findAll('div',{'class':'div-cun'})
+#         if content:
+#             info_dict.update({u'签约时间':content[0].text})
+#             info_dict.update({u'签约单价':content[1].text})
+#             info_dict.update({u'签约总价':content[2].text})
+#         content=cj.find('div',{'class':'introduce'}).text.strip().split()
+#         if content:
+#             for c in content:
+#                 if c.find(u'满')!=-1:
+#                     info_dict.update({u'房产类型':c})
+#                 elif c.find(u'学')!=-1:
+#                     info_dict.update({u'学区':c})
+#                 elif c.find(u'距')!=-1:
+#                     info_dict.update({u'地铁':c})
         
-        command=gen_chengjiao_insert_command(info_dict)
-        db_cj.execute(command,1)
+#         command=gen_chengjiao_insert_command(info_dict)
+#         db_cj.execute(command,1)
 
 
-def xiaoqu_chengjiao_spider(db_cj,xq_name=u"冠庭园"):
-    """
-    爬取小区成交记录
-    """
-    url=u"http://bj.lianjia.com/chengjiao/rs"+urllib2.quote(xq_name)+"/"
-    try:
-        req = urllib2.Request(url,headers=hds[random.randint(0,len(hds)-1)])
-        source_code = urllib2.urlopen(req,timeout=10).read()
-        plain_text=unicode(source_code)#,errors='ignore')   
-        soup = BeautifulSoup(plain_text)
-    except (urllib2.HTTPError, urllib2.URLError), e:
-        print e
-        exception_write('xiaoqu_chengjiao_spider',xq_name)
-        return
-    except Exception,e:
-        print e
-        exception_write('xiaoqu_chengjiao_spider',xq_name)
-        return
-    content=soup.find('div',{'class':'page-box house-lst-page-box'})
-    total_pages=0
-    if content:
-        d="d="+content.get('page-data')
-        exec(d)
-        total_pages=d['totalPage']
+# def xiaoqu_chengjiao_spider(db_cj,xq_name=u"冠庭园"):
+#     """
+#     爬取小区成交记录
+#     """
+#     url=u"http://bj.lianjia.com/chengjiao/rs"+urllib2.quote(xq_name)+"/"
+#     try:
+#         req = urllib2.Request(url,headers=hds[random.randint(0,len(hds)-1)])
+#         source_code = urllib2.urlopen(req,timeout=10).read()
+#         plain_text=unicode(source_code)#,errors='ignore')   
+#         soup = BeautifulSoup(plain_text)
+#     except (urllib2.HTTPError, urllib2.URLError), e:
+#         print e
+#         exception_write('xiaoqu_chengjiao_spider',xq_name)
+#         return
+#     except Exception,e:
+#         print e
+#         exception_write('xiaoqu_chengjiao_spider',xq_name)
+#         return
+#     content=soup.find('div',{'class':'page-box house-lst-page-box'})
+#     total_pages=0
+#     if content:
+#         d="d="+content.get('page-data')
+#         exec(d)
+#         total_pages=d['totalPage']
     
-    threads=[]
-    for i in range(total_pages):
-        url_page=u"http://bj.lianjia.com/chengjiao/pg%drs%s/" % (i+1,urllib2.quote(xq_name))
-        t=threading.Thread(target=chengjiao_spider,args=(db_cj,url_page))
-        threads.append(t)
-    for t in threads:
-        t.start()
-    for t in threads:
-        t.join()
+#     threads=[]
+#     for i in range(total_pages):
+#         url_page=u"http://bj.lianjia.com/chengjiao/pg%drs%s/" % (i+1,urllib2.quote(xq_name))
+#         t=threading.Thread(target=chengjiao_spider,args=(db_cj,url_page))
+#         threads.append(t)
+#     for t in threads:
+#         t.start()
+#     for t in threads:
+#         t.join()
 
     
-def do_xiaoqu_chengjiao_spider(db_xq,db_cj):
-    """
-    批量爬取小区成交记录
-    """
-    count=0
-    xq_list=db_xq.fetchall()
-    for xq in xq_list:
-        xiaoqu_chengjiao_spider(db_cj,xq[0])
-        count+=1
-        print 'have spidered %d xiaoqu' % count
-    print 'done'
+# def do_xiaoqu_chengjiao_spider(db_xq,db_cj):
+#     """
+#     批量爬取小区成交记录
+#     """
+#     count=0
+#     xq_list=db_xq.fetchall()
+#     for xq in xq_list:
+#         xiaoqu_chengjiao_spider(db_cj,xq[0])
+#         count+=1
+#         print 'have spidered %d xiaoqu' % count
+#     print 'done'
 
 
-def exception_write(fun_name,url):
-    """
-    写入异常信息到日志
-    """
-    lock.acquire()
-    f = open('log.txt','a')
-    line="%s %s\n" % (fun_name,url)
-    f.write(line)
-    f.close()
-    lock.release()
+# def exception_write(fun_name,url):
+#     """
+#     写入异常信息到日志
+#     """
+#     lock.acquire()
+#     f = open('log.txt','a')
+#     line="%s %s\n" % (fun_name,url)
+#     f.write(line)
+#     f.close()
+#     lock.release()
 
 
-def exception_read():
-    """
-    从日志中读取异常信息
-    """
-    lock.acquire()
-    f=open('log.txt','r')
-    lines=f.readlines()
-    f.close()
-    f=open('log.txt','w')
-    f.truncate()
-    f.close()
-    lock.release()
-    return lines
+# def exception_read():
+#     """
+#     从日志中读取异常信息
+#     """
+#     lock.acquire()
+#     f=open('log.txt','r')
+#     lines=f.readlines()
+#     f.close()
+#     f=open('log.txt','w')
+#     f.truncate()
+#     f.close()
+#     lock.release()
+#     return lines
 
 
-def exception_spider(db_cj):
-    """
-    重新爬取爬取异常的链接
-    """
-    count=0
-    excep_list=exception_read()
-    while excep_list:
-        for excep in excep_list:
-            excep=excep.strip()
-            if excep=="":
-                continue
-            excep_name,url=excep.split(" ",1)
-            if excep_name=="chengjiao_spider":
-                chengjiao_spider(db_cj,url)
-                count+=1
-            elif excep_name=="xiaoqu_chengjiao_spider":
-                xiaoqu_chengjiao_spider(db_cj,url)
-                count+=1
-            else:
-                print "wrong format"
-            print "have spidered %d exception url" % count
-        excep_list=exception_read()
-    print 'all done ^_^'
+# def exception_spider(db_cj):
+#     """
+#     重新爬取爬取异常的链接
+#     """
+#     count=0
+#     excep_list=exception_read()
+#     while excep_list:
+#         for excep in excep_list:
+#             excep=excep.strip()
+#             if excep=="":
+#                 continue
+#             excep_name,url=excep.split(" ",1)
+#             if excep_name=="chengjiao_spider":
+#                 chengjiao_spider(db_cj,url)
+#                 count+=1
+#             elif excep_name=="xiaoqu_chengjiao_spider":
+#                 xiaoqu_chengjiao_spider(db_cj,url)
+#                 count+=1
+#             else:
+#                 print "wrong format"
+#             print "have spidered %d exception url" % count
+#         excep_list=exception_read()
+#     print 'all done ^_^'
     
 
 
 if __name__=="__main__":
-    command="create table if not exists xiaoqu (name TEXT primary key UNIQUE, regionb TEXT, regions TEXT, style TEXT, year TEXT)"
-    db_xq=SQLiteWraper('lianjia-xq.db',command)
+    # command="create table if not exists xiaoqu (name TEXT primary key UNIQUE, regionb TEXT, regions TEXT, style TEXT, year TEXT)"
+    # db_xq=SQLiteWraper('lianjia-xq.db',command)
     
-    command="create table if not exists chengjiao (href TEXT primary key UNIQUE, name TEXT, style TEXT, area TEXT, orientation TEXT, floor TEXT, year TEXT, sign_time TEXT, unit_price TEXT, total_price TEXT,fangchan_class TEXT, school TEXT, subway TEXT)"
-    db_cj=SQLiteWraper('lianjia-cj.db',command)
+    # command="create table if not exists chengjiao (href TEXT primary key UNIQUE, name TEXT, style TEXT, area TEXT, orientation TEXT, floor TEXT, year TEXT, sign_time TEXT, unit_price TEXT, total_price TEXT,fangchan_class TEXT, school TEXT, subway TEXT)"
+    # db_cj=SQLiteWraper('lianjia-cj.db',command)
     
-    #爬下所有的小区信息
-    for region in regions:
-        do_xiaoqu_spider(db_xq,region)
+    # #爬下所有的小区信息
+    # for region in regions:
+    #     do_xiaoqu_spider(db_xq,region)
     
-    #爬下所有小区里的成交信息
-    do_xiaoqu_chengjiao_spider(db_xq,db_cj)
+    # #爬下所有小区里的成交信息
+    # do_xiaoqu_chengjiao_spider(db_xq,db_cj)
     
-    #重新爬取爬取异常的链接
-    exception_spider(db_cj)
+    # #重新爬取爬取异常的链接
+    # exception_spider(db_cj)
+    xiaoqu_spider()
 

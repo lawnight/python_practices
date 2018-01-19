@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# 成都小区的成交价
+# 成都小区的成交价和租金，
 
 import requests
 import random
@@ -35,21 +35,25 @@ def get_xiaoqu_info(url):
         response = requests.get(
             url, headers=hds[random.randint(0, len(hds) - 1)])
 
-        content = response.text
+        print(len(response.content))
+
+        content = response.content.decode('gb2312',errors='ignore')
 
         soup = BeautifulSoup(content, "lxml")
 
-       
+        chengjiao_list = soup.find('p', {'class':'floatl totaltext'})
 
-        chengjiao_list = soup.find('tbody')
+        if chengjiao_list:
+            count = chengjiao_list.find('span')
+            if count > 0:
+                print(url)
+            else:
+                print("成交为0")
 
-
-
-        print(chengjiao_list)
-        
     except Exception as e:
         print (e)
         return
+
 
 def page_spider(url):
     try:
@@ -66,7 +70,6 @@ def page_spider(url):
         for xq in xiaoqu_list:
 
             try:
-
                 # print(xq)
                 info_dict = {}
 
@@ -78,20 +81,6 @@ def page_spider(url):
                 get_xiaoqu_info(xiaoqu_url)
 
                 print(xiaoqu_url)
-
-                # info_dict.update({u'小区名称':xq.find('div',{'class':'title'}).text})
-
-                # content=(xq.find('div',{'class':'info'}).text)
-                # print(content)
-                # info=re.match(r".+>(.+)</a>.+>(.+)</a>.+</span>(.+)<span>.+</span>(.+)",content)
-                # if info:
-                #     info=info.groups()
-                #     info_dict.update({u'大区域':info[0]})
-                #     info_dict.update({u'小区域':info[1]})
-                #     info_dict.update({u'小区户型':info[2]})
-                #     info_dict.update({u'建造时间':info[3][:4]})
-                # command=gen_xiaoqu_insert_command(info_dict)
-                # db_xq.execute(command,1)
             except Exception as e:
                 print(e)
     except Exception as e:

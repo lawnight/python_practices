@@ -10,12 +10,11 @@ from scrapy.http import HtmlResponse
 # http://www.cdht.gov.cn/xinxiang/maillist_2.jspx?channelId=546&type=1,2,3
 
 #key_words = u"红树湾"
-#u"关于中央第五环境保护督察组"
+# u"关于中央第五环境保护督察组"
 key_words = u"中和"
 
 
-scrapy_url  = 'http://www.cdht.gov.cn/zwgktzgg/index_%d.jhtml'
-
+scrapy_url = 'http://www.cdht.gov.cn/zwgktzgg/index_%d.jhtml'
 
 
 class NoticeSpider(scrapy.Spider):
@@ -23,10 +22,10 @@ class NoticeSpider(scrapy.Spider):
     content = ""
 
     def start_requests(self):
-        urls = [ 'http://www.cdht.gov.cn/zwgktzgg/index.jhtml']
+        urls = ['http://www.cdht.gov.cn/zwgktzgg/index.jhtml']
 
-        for i in range(1,30):
-            str =  scrapy_url%i
+        for i in range(1, 30):
+            str = scrapy_url % i
             urls.append(str)
 
         for url in urls:
@@ -39,23 +38,23 @@ class NoticeSpider(scrapy.Spider):
         ret = []
 
         for link in table:
-            #print '-' * 20
-			#print("process link:%s" % link.extract())
-            if findKey in link.extract():              
+            # print '-' * 20
+                        #print("process link:%s" % link.extract())
+            if findKey in link.extract():
                 url = link.xpath('td/a/@href').extract_first()
-                print type(url)
+                print(type(url))
                 yield scrapy.Request(url=url, callback=self.parse2)
-        #print '-' * 20
-		print('processed page')
+        # print '-' * 20
+                print('processed page')
 
-    def parse2(self, response):       
+    def parse2(self, response):
         replace = "<font size='3' color='red'> %s </font>" % key_words
-        local_content  = (response.selector.xpath("//div[contains(@class,'p20 gary_bg3')]").extract_first()).replace(key_words,replace)
-    
+        local_content = (response.selector.xpath(
+            "//div[contains(@class,'p20 gary_bg3')]").extract_first()).replace(key_words, replace)
 
         if key_words in local_content:
             self.content = self.content + local_content.encode('utf-8')
-            
+
             # 待优化，不用每次保存
             filename = 'notice_out.html'
             with open(filename, 'wb') as f:

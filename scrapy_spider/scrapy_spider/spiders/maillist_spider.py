@@ -24,8 +24,9 @@ class MaillistSpider(scrapy.Spider):
     def start_requests(self):
         urls = [
             'http://www.cdht.gov.cn/xinxiang/maillist.jspx?channelId=546&type=1,2,3']
-
-        for i in range(1, 30):
+        count = 30
+        print('prepare process %d page'%count)
+        for i in range(1, count):
             str = scrapy_url % i
             urls.append(str)
 
@@ -33,18 +34,19 @@ class MaillistSpider(scrapy.Spider):
             yield scrapy.Request(url=url, callback=self.parse)
 
     def parse(self, response):
-        table = response.xpath("//li")
+        table = response.xpath("//tbody")
         findKey = key_words
         # findKey = ""
         ret = []
 
         for link in table:
-            print '-' * 20
+            # print(link.extract())
             if findKey in link.extract():
+                print('found one fit:%s'%link.extract())
                 url = link.xpath('span/a/@href').extract_first()
                 url = "http://www.cdht.gov.cn/" + url
                 yield scrapy.Request(url=url, callback=self.parse2)
-        print '-' * 20
+        print('processed one page!')
 
     def parse2(self, response):
         replace = "<font size='3' color='red'> %s </font>" % key_words
