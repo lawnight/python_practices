@@ -42,14 +42,18 @@ class House(scrapy.Item):
 
 
 class Chengjiao(scrapy.Item):
-     # 小区名字
-    name = scrapy.Field()
-    # 成交总价格
-    t_Price = scrapy.Field()
-    # 成交单价
-    a_price = scrapy.Field()
-    # 成交时间
-    date = scrapy.Field()
-    # 成交面积
-    area = scrapy.Field()
-    last_updated = scrapy.Field(serializer=str)
+    n_jj = scrapy.Field()
+    n_jn = scrapy.Field()
+    n_ch = scrapy.Field()
+    n_wh = scrapy.Field()
+    n_qy = scrapy.Field()
+    n_gx = scrapy.Field()
+
+    o_jj = scrapy.Field()
+    o_jn = scrapy.Field()
+    o_ch = scrapy.Field()
+    o_wh = scrapy.Field()
+    o_qy = scrapy.Field()
+    o_gx = scrapy.Field()
+
+

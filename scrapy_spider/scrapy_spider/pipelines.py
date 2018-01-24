@@ -7,6 +7,7 @@
 import json
 
 from scrapy.exporters import CsvItemExporter
+import re
 
 
 class ScrapySpiderPipeline(object):
@@ -25,7 +26,9 @@ class CsvPipeline(object):
         self.file.close()
 
     def process_item(self, item, spider):
-        
+        for k,v in item.iteritems():
+            for data in v:                
+                re.findall('[0-9]+',data)
         self.exporter.export_item(item)
         return item
 

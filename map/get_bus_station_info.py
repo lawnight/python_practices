@@ -124,6 +124,7 @@ if __name__ == '__main__':
     bus_serial = get_all_bus_station()
     # bus_serial = bus_serial + "(公交站)"
 
+    #是否已经查询过，把查询过的剔除
     if os.path.exists(save_file):
         t = pd.read_csv(save_file)
         queried_name = t['query_name'].values
