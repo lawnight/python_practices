@@ -18,4 +18,5 @@ def job():
 scheduler = BlockingScheduler()
 scheduler.add_job(job, 'cron', day_of_week='0-6', hour=23, minute=50)
 # scheduler.add_job(job, 'cron', day_of_week='0-6', hour=20, minute=42)
+print('start scheduler')
 scheduler.start()
