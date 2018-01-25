@@ -1,3 +1,4 @@
+# -*- coding: UTF-8 -*-
 #定时抓取
 import subprocess
 import os
