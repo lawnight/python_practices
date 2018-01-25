@@ -8,6 +8,7 @@ import json
 
 from scrapy.exporters import CsvItemExporter
 import re
+import os.path
 
 
 class ScrapySpiderPipeline(object):
@@ -17,7 +18,7 @@ class ScrapySpiderPipeline(object):
 
 class CsvPipeline(object):
     def __init__(self):
-        self.file = open("test11.csv", 'wb+')
+        self.file = open("test11.csv", 'a+')
         self.exporter = CsvItemExporter(self.file)
         self.exporter.start_exporting()
 
@@ -26,36 +27,37 @@ class CsvPipeline(object):
         self.file.close()
 
     def process_item(self, item, spider):
-        # for k,v in item.iteritems():
-        #     for data in v:                
-        #         re.findall('[0-9]+',data)
         self.exporter.export_item(item)
         return item
 
 
-class JsonWriterPipeline(object):
+class SelfCsvPipeline(object):
+    def __init__(self):
+        file_name = "chengjiao.csv"
 
-    def open_spider(self, spider):
-        self.file = open('items.jl', 'w')
+        need_header = True
+        if os.path.isfile(file_name):
+            need_header = False
+
+        self.file = open(file_name, 'a+')
+        if need_header:
+            print('create csv header')
+            header = 'n_jj,n_jn,n_ch,n_wh,n_qy,n_gx,o_jj,o_jn,o_ch,o_wh,o_qy,o_gx,date'
+            self.file.writelines(header + '\n')
 
     def close_spider(self, spider):
+        self.file.flush()
         self.file.close()
 
     def process_item(self, item, spider):
-        line = json.dumps(dict(item)) + "\n"
-        self.file.write(line)
-        return item
+        try:
+            # print('+","+'.join(['item["%s"][0]'%i for i in array])) 通过这个临时程序生成下面的代码
+            line = item["n_jj"][0] + "," + item["n_jn"][0] + "," + item["n_ch"][0] + "," + item["n_wh"][0] + "," + item["n_qy"][0] + "," + item["n_gx"][0] + "," + \
+                item["o_jj"][0] + "," + item["o_jn"][0] + "," + item["o_ch"][0] + "," + \
+                item["o_wh"][0] + "," + item["o_qy"][0] + "," + \
+                item["o_gx"][0] + "," + item["date"][0]
+            self.file.writelines(line + '\n')
+        except Exception as ex:
+            print(ex)
 
-
-class JsonExportPipeline(object):
-
-    def open_spider(self, spider):
-        self.file = open('items.jl', 'w')
-
-    def close_spider(self, spider):
-        self.file.close()
-
-    def process_item(self, item, spider):
-        line = json.dumps(dict(item)) + "\n"
-        self.file.write(line)
         return item

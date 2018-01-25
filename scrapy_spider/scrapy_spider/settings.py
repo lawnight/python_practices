@@ -67,7 +67,7 @@ ROBOTSTXT_OBEY = True
 
 # number is priority 
 ITEM_PIPELINES = {
-   'scrapy_spider.pipelines.CsvPipeline': 300,
+   'scrapy_spider.pipelines.SelfCsvPipeline': 300,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)
