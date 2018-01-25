@@ -8,6 +8,9 @@ from scrapy.http import HtmlResponse
 from scrapy.loader import ItemLoader
 from scrapy_spider.items import *
 
+import time
+
+
 # 房管局成交信息，每天23:00 同步
 # http://www.cdfgj.gov.cn/SCXX/Default.aspx
 
@@ -52,5 +55,7 @@ class chengjiaoSpider(scrapy.Spider):
         item.add_xpath('o_qy', old_xpath % 6, re='[0-9]+')
         item.add_xpath('o_wh', old_xpath % 7, re='[0-9]+')
         item.add_xpath('o_gx', old_xpath % 8, re='[0-9]+')
+
+        item.add_value('date',time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) )
 
         return item.load_item()

@@ -17,7 +17,7 @@ class ScrapySpiderPipeline(object):
 
 class CsvPipeline(object):
     def __init__(self):
-        self.file = open("test11.csv", 'wb')
+        self.file = open("test11.csv", 'wb+')
         self.exporter = CsvItemExporter(self.file)
         self.exporter.start_exporting()
 
@@ -26,9 +26,9 @@ class CsvPipeline(object):
         self.file.close()
 
     def process_item(self, item, spider):
-        for k,v in item.iteritems():
-            for data in v:                
-                re.findall('[0-9]+',data)
+        # for k,v in item.iteritems():
+        #     for data in v:                
+        #         re.findall('[0-9]+',data)
         self.exporter.export_item(item)
         return item
 

@@ -56,4 +56,6 @@ class Chengjiao(scrapy.Item):
     o_qy = scrapy.Field()
     o_gx = scrapy.Field()
 
+    date = scrapy.Field()
+
 
