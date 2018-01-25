@@ -5,10 +5,13 @@ import os
 
 from apscheduler.schedulers.blocking import BlockingScheduler
 from datetime import datetime
+import logging
+
+logging.basicConfig()
 
 def scrapy_some():
     os.chdir('scrapy_spider')
-    subprocess.Popen('scrapy crawl chengjiao')
+    os.system('scrapy crawl chengjiao')
 
 # 输出时间
 def job():
