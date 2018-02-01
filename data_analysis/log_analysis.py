@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-#利用python进行数据分析-将服务器的日志分析成table，然后进行分析
+#利用python进行数据分析-将服务器的日志分析成table，然后进行分析,排序除打印最多的日志，然后进行定位分析
 #%%
 import pandas as pd
 import matplotlib

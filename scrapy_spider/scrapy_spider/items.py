@@ -59,3 +59,10 @@ class Chengjiao(scrapy.Item):
     date = scrapy.Field()
 
 
+class Stock(scrapy.Item):
+    value = scrapy.Field()
+
+
+    
+
+
