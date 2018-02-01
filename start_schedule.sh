@@ -1,1 +1,1 @@
-python schedule.py >out.txt &
+python schedule.py >out.txt 2>&1 &

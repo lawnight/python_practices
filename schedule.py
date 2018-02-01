@@ -7,10 +7,9 @@ from apscheduler.schedulers.blocking import BlockingScheduler
 from datetime import datetime
 import logging
 
-logging.basicConfig()
 
 def scrapy_some():
-    os.chdir('scrapy_spider')
+    print('scrapy some')
     os.system('scrapy crawl chengjiao')
 
 # 输出时间
@@ -19,6 +18,9 @@ def job():
     scrapy_some()
 
 # BlockingScheduler
+print('start run this script')
+logging.basicConfig()
+os.chdir('scrapy_spider')
 scheduler = BlockingScheduler()
 scheduler.add_job(job, 'cron', day_of_week='0-6', hour=23, minute=50)
 # scheduler.add_job(job, 'cron', day_of_week='0-6', hour=20, minute=42)
