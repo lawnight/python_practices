@@ -16,11 +16,15 @@
 # te = "['x','y']"
 # te = exec('temp = ' + te)
 # print(temp[0])
-import codecs
-t = "字"
-s = u"字".encode('utf-8')
-if t==s:
-    print 'equal'
+
+
+l = '2,7,5,1,3,14,41,38,66,47,36,40'.split(',')
+c= 0
+for i in l:
+    count = int(i)
+    c= c+count
+
+print str(c)
 
 
 
