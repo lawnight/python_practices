@@ -3,3 +3,9 @@
 *.pyc
 
 log.txt
+
+
+.vscode
+
+
+*.csv

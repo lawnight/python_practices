@@ -6,23 +6,39 @@ import os
 from apscheduler.schedulers.blocking import BlockingScheduler
 from datetime import datetime
 import logging
+import funi
 
-
-def scrapy_some():
-    print('scrapy some')
+#抓取房管局的成交
+def scrapy_chengjiao():
+    print('scrapy_chengjiao')
     os.system('scrapy crawl chengjiao')
 
+def scrapy_funi():
+    print('scrapy_funi')
+    funi.getInfo()
+
+def analysis():
+    pass
+
+
 # 输出时间
-def job():
+def scrapy_job():
     print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-    scrapy_some()
+    scrapy_chengjiao()
+    scrapy_funi()
+
+    analysis()
 
 # BlockingScheduler
 print('start run this script')
 logging.basicConfig()
 os.chdir('scrapy_spider')
 scheduler = BlockingScheduler()
-scheduler.add_job(job, 'cron', day_of_week='0-6', hour=23, minute=50)
-# scheduler.add_job(job, 'cron', day_of_week='0-6', hour=20, minute=42)
+
+scheduler.add_job(scrapy_job, 'cron', day_of_week='0-6', hour=23, minute=50)
+
+
+
 print('start scheduler')
-scheduler.start()
+# scheduler.start()
+scrapy_funi()
