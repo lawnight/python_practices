@@ -19,8 +19,8 @@ def analysis():
             lastRow = dqu.pop()
             secondRow = dqu.pop()
 
-            sale1 = sumCount(lastRow) - sumCount(secondRow)
-            sale2 = int(lastRow['5B']) - int(secondRow['5B'])
+            sale1 =  sumCount(secondRow) - sumCount(lastRow)
+            sale2 =  int(secondRow['5B']) - int(lastRow['5B']) 
             left = int(lastRow['5B'])
 
             more_sale = int(lastRow['totalAmount']) - \
