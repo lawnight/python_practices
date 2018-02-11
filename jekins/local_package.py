@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# 本地打包脚本
 import os
 import shutil
 import re
@@ -7,39 +8,43 @@ import time
 from distutils.dir_util import copy_tree
 
 force_update = False
-
 update_branch = 'develop'
+commit_branch = 'develop'
 
-commit_branch = 'princess-develop'
+excelPath = r'G:\100day\for_pack\loui_cn_excel'
 
-excelPath = r'G:\100day\for_pack\br_cn_excel'
-game_server_path = r'G:\100day\for_pack\br_cn_server'
+to_excelPath = r'G:\100day\loui_pack\loui_cn_server\gameSrv\excel'
 
-to_excelPath = r'G:\100day\brgz_cn_server\gameSrv\excel'
-to_gamePath = r'G:\100day\brgz_cn_server\gameSrv'
 
+game_server_path = r'G:\100day\for_pack\loui_cn_server'
+to_gamePath = r'G:\100day\loui_pack\loui_cn_server\gameSrv'
+
+def push(path):
+    os.chdir(path)
+    os.system('git push')
 
 def pull(path, branch):
     os.chdir(path)
     os.system('git checkout %s' % branch)
-    
+
     p = os.popen('git pull')
     result = p.read()
     #print (result)
+    flage = True
     if 'Already up-to-date' in result and not force_update:
-        return False, 0, result
+        flage = False
 
     # get commit hash
     p = os.popen('git log')
     version = re.search('commit (.*)\\n?', p.read()).group(1)
-    return True, version, result
+    return flage, version, result
 
 
-def commit(path, msg): 
+def commit(path, msg):
     os.chdir(path)
     os.system('git checkout %s' % commit_branch)
     os.system('git add .')
-    print os.popen('git commit -m %s' % msg).read()    
+    os.system('git commit -m "%s"' % msg)
 
 
 def copytree(src, dst, symlinks=False, ignore=None):
@@ -65,8 +70,6 @@ def compile(path):
     os.system('mvn -Dmaven.test.skip=true package')
 
 
-
-
 def copy(subDir):
     src = os.path.join(game_server_path, 'target', subDir)
     dst = os.path.join(to_gamePath, subDir)
@@ -76,26 +79,34 @@ def copy(subDir):
         copytree(src, dst, ignore={'.git'})
 
 
-print '--------processing excel'
-flage, version, result = pull(excelPath, update_branch)
+def process_excle():
 
-if flage:
-    print result
+    print '--------processing excel start'
+    flage, version, result = pull(excelPath, update_branch)
+    
+    # pull(to_excelPath,commit_branch)
+    print '--------copy to'
     copytree(excelPath, to_excelPath, ignore={'.git'})
-    commit(to_excelPath, "excel:%s" % version)
-    print '--------processing excel end commit'
-else:
-    print '--------processing excel end nothing change'
+    commit(to_excelPath, "excel develop branch SHA-1:%s" % version)
+    push(to_excelPath)
+    print '--------processing excel end'
 
 
-print '--------processing server'
-flage, version, result = pull(game_server_path, update_branch)
-if flage:
-    compile(game_server_path)
-    copy('lib')
-    copy('resources')
-    copy('princess-server.jar')
-    commit(to_gamePath, "game_server:%s" % version)
-    print '--------processing server end'
-else:
-    print '--------processing server end nothing chage'
+def process_server():
+    print '--------processing server'
+    flage, version, result = pull(game_server_path, update_branch)
+
+
+    if flage:
+        compile(game_server_path)
+        # copy('lib')
+        # copy('resources')
+        copy('princess-server.jar')
+        commit(to_gamePath, "server develop branch SHA-1:%s" % version)
+        print '--------processing server end'
+    else:
+        print '--------processing server end nothing chage'
+
+
+process_excle()
+process_server()

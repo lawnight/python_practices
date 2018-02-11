@@ -27,7 +27,7 @@ def analysis():
                 int(secondRow['totalAmount'])
 
             str1 = '蓝光昨天售出:%d 5号楼售出:%d 5号楼剩余:%d' % (sale1, sale2, left)
-            str2 = '昨天成都总出售:%s 总成交:%s 比前天多出售:%d' % (
+            str2 = '昨天成都总出售:%s 总成交:%s 环比前天出售:%d' % (
                 lastRow['totalAmount'], lastRow['totalPrice'], more_sale)
 
             utils.sendMail('我的资讯', utils.getTime() + '\n' + str1 + '\n' + str2)
