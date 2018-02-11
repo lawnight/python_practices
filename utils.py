@@ -2,6 +2,7 @@
 import time
 import os
 import smtplib
+import csv
 
 from email.mime.text import MIMEText
 from email.header import Header
@@ -9,7 +10,18 @@ from email.header import Header
 def getTime():
     return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
 
-
+def writeCsv(name,info):
+    fieldnames = info.keys()
+    
+    need_header = True
+    if  os.path.isfile(name):
+        need_header = False
+        
+    with open(name, 'ab') as csvfile:
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        if need_header:
+            writer.writeheader()
+        writer.writerow(info)
 
 def sendMail(subject,msg):
     message = MIMEText(msg, 'plain', 'utf-8')

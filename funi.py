@@ -4,6 +4,7 @@ import json
 import csv
 from utils import *
 
+
 fileName = 'saleInfo.csv'
 
 from collections import OrderedDict
@@ -34,18 +35,7 @@ def getValueByKey(key,buildList):
 
 
 
-def writeCsv(name,info):
-    fieldnames = info.keys()
-    
-    need_header = True
-    if  os.path.isfile(name):
-        need_header = False
-        
-    with open(name, 'ab') as csvfile:
-        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-        if need_header:
-            writer.writeheader()
-        writer.writerow(info)
+
 
 
 
