@@ -19,6 +19,34 @@ to_excelPath = r'G:\100day\loui_pack\loui_cn_server\gameSrv\excel'
 game_server_path = r'G:\100day\for_pack\loui_cn_server'
 to_gamePath = r'G:\100day\loui_pack\loui_cn_server\gameSrv'
 
+import threading
+import paramiko
+import subprocess
+
+def ssh_command(ip,port,user,passwd,command):
+    client=paramiko.SSHClient()
+    #client.load_system_host_keys()
+    #client.load_host_keys('./known_hosts')
+    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    client.connect(ip,username=user,password=passwd,port=port)
+    ssh_session=client.get_transport().open_session()
+    if(ssh_session.active):
+        ssh_session.exec_command(command)
+        print(ssh_session.recv(1024))#read banner
+        while(True):
+            command=ssh_session.recv(1024)	#get the command from the SSH server
+            try:
+                cmd_output=subprocess.check_output(command,shell=True)
+                ssh_session.send(cmd_output)
+            except Exception as e:
+                ssh_session.send(str(e))
+
+        client.close()
+    return 
+
+
+
+
 def push(path):
     os.chdir(path)
     os.system('git push')
@@ -103,10 +131,13 @@ def process_server():
         # copy('resources')
         copy('princess-server.jar')
         commit(to_gamePath, "server develop branch SHA-1:%s" % version)
+        push(to_gamePath)
         print '--------processing server end'
     else:
         print '--------processing server end nothing chage'
 
-
+# 提交到外测
 process_excle()
 process_server()
+# 外测更新
+ssh_command('140.143.161.24','4399','louiadmin','loui@ops','sh update_restart.sh')

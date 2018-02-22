@@ -13,8 +13,8 @@ def sumCount(row):
 
 def getWearth():
     info = tianqi.getInfo()
-    return '天气:%s-%s 风向:%s' % (
-        info['minTem'], info['maxTem'], info['wind'])
+    return '天气:%s-%s %s转%s 风向:%s' % (
+        info['minTem'], info['maxTem'],info['day'],info['night'],info['wind'])
 
 def analysis():
 

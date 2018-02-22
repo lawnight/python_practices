@@ -1,8 +1,8 @@
 #让开服更开快速，不用sleep
 
 port=`netstat -ano|grep 10001`
-
-while [ -z "$port" ]
+# -z 字符串为空 -n为非空
+while [ -n "$port" ]
 do
         port=`netstat -ano|grep 10001`
         sleep .6

@@ -19,9 +19,10 @@ def getInfo():
     info['minTem'] = obj["56294"]["minTem"].encode('utf-8')
     info['wind'] = obj["56294"]["wind"].encode('utf-8')
 
+    info['day'] = obj["56294"]["day"].encode('utf-8')
+    info['night'] = obj["56294"]["night"].encode('utf-8')
+
     # print(info)
 
     return info
-
-getInfo()
 
