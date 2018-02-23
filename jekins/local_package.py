@@ -140,4 +140,4 @@ def process_server():
 process_excle()
 process_server()
 # 外测更新
-ssh_command('140.143.161.24','4399','louiadmin','loui@ops','sh update_restart.sh')
+# ssh_command('140.143.161.24','4399','louiadmin','loui@ops','sh update_restart.sh')
