@@ -4,6 +4,7 @@ import csv
 import os
 from collections import deque
 import tianqi
+import stock
 
 
 def sumCount(row):
@@ -15,6 +16,12 @@ def getWearth():
     info = tianqi.getInfo()
     return '天气:%s-%s %s转%s 风向:%s' % (
         info['minTem'], info['maxTem'],info['day'],info['night'],info['wind'])
+
+def getStock():
+    info = stock.getInfo()
+    #  return '沪市:%s 变化:%s'%info[10],info['199112']
+    return '沪市:%s '%info['10']
+   
 
 def analysis():
 
@@ -38,6 +45,6 @@ def analysis():
             str2 = '昨天成都总出售:%s 总成交:%s 环比前天出售:%d' % (
                 lastRow['totalAmount'], lastRow['totalPrice'], more_sale)
 
-            msg = '\n'.join([utils.getTime(), getWearth(),str1, str2])
+            msg = '\n'.join([utils.getTime(), getWearth(),getStock(),str1, str2])
 
             utils.sendMail('我的资讯',msg )
