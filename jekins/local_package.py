@@ -12,7 +12,6 @@ update_branch = 'develop'
 commit_branch = 'develop'
 
 excelPath = r'G:\100day\for_pack\loui_cn_excel'
-
 to_excelPath = r'G:\100day\loui_pack\loui_cn_server\gameSrv\excel'
 
 
@@ -42,14 +41,11 @@ def ssh_command(ip,port,user,passwd,command):
                 ssh_session.send(str(e))
 
         client.close()
-    return 
-
-
-
+    return
 
 def push(path):
     os.chdir(path)
-    os.system('git push')
+    os.system('git push')    
 
 def pull(path, branch):
     os.chdir(path)
@@ -123,8 +119,7 @@ def process_excle():
 def process_server():
     print '--------processing server'
     flage, version, result = pull(game_server_path, update_branch)
-
-
+    # flage = True
     if flage:
         compile(game_server_path)
         # copy('lib')
@@ -138,6 +133,6 @@ def process_server():
 
 # 提交到外测
 process_excle()
-process_server()
+# process_server()
 # 外测更新
 # ssh_command('140.143.161.24','4399','louiadmin','loui@ops','sh update_restart.sh')
