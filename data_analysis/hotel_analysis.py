@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# 网上泄露的100w开房记录，存入mongodb，大概有1个G。
 import pandas as pd
 import matplotlib
 import matplotlib.pyplot as plt
