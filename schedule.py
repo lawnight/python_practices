@@ -34,9 +34,9 @@ logging.basicConfig()
 os.chdir('scrapy_spider')
 scheduler = BlockingScheduler()
 
-scheduler.add_job(scrapy_job, 'cron', day_of_week='0-6', hour=23, minute=50)
+scheduler.add_job(scrapy_job, 'cron', day_of_week='0-6', hour=06, minute=10)
 
 print('start scheduler')
+scrapy_job()
 scheduler.start()
 # analysis_csv.analysis()
-

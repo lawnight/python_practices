@@ -20,7 +20,10 @@ def getWearth():
 def getStock():
     info = stock.getInfo()
     #  return '沪市:%s 变化:%s'%info[10],info['199112']
-    return '沪市:%s '%info['10']
+    if info:
+        return '沪市:%s '%info['10']
+    else:
+        return ''
    
 
 def analysis():
@@ -47,4 +50,4 @@ def analysis():
 
             msg = '\n'.join([utils.getTime(), getWearth(),getStock(),str1, str2])
 
-            utils.sendMail('我的资讯',msg )
+            etils.sendMail('我的资讯',msg )
