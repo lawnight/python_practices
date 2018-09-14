@@ -6,7 +6,7 @@
     "configurations": [
         
         {
-            "name": "Python",
+            "name": "Python3",
             "type": "python",
             "request": "launch",
             "stopOnEntry": false,

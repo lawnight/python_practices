@@ -172,8 +172,8 @@ def main():
 #     remote_host = '192.168.2.207'
 #     remote_port = 10001
 
-    remote_host = '127.0.0.1'
-    remote_port = 10003
+    remote_host = '192.168.2.207'
+    remote_port = 10001
 
     # this tells our proxy to connect and receive data
     # before sending to the remote host

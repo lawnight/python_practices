@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import xxtea
-import proxy
+import tcp_proxy as proxy
 
 
 def hexdump(src, length=16):
@@ -13,6 +13,7 @@ def hexdump(src, length=16):
         result.append(b"%04X   %-*s   %s" %
                       (i, length * (digits + 1), hexa, text))
     print b'\n'.join(result)
+
 
 def getIntByIndex(buffer, index):
     bf = buffer[index * 4:index * 4 + 4]
@@ -27,14 +28,18 @@ def getIntByOffset(buffer, offset):
     bf = bf.encode('hex')
     return int(bf, 16)
 
+
 def revertStr(num):
     return str("%x" % num).decode('hex')
+
 
 def getBuf(buffer, offset):
     bf = buffer[offset:offset + 4]
     return bf
 
 # decrypt
+
+
 def decrypt(data, key):
     if len(data) <= 3:
         return data
@@ -50,20 +55,20 @@ def decrypt(data, key):
         plain = plain + data[padding::]
     return plain
 
-def encrypt(data,key):
-    if len(data)<=3:
+
+def encrypt(data, key):
+    if len(data) <= 3:
         return data
-    
+
     padding = len(data) / 4 * 4
     to_data = data[0:padding]
-
     cipher = xxtea.encrypt(to_data, key)
-
     if padding < len(data):
         cipher = cipher + data[padding::]
-    return cipher 
+    return cipher
 
 # modify any responses destined for the local hosts
+
 
 def response_handler(buffer):
     # perform packet modifications
@@ -77,12 +82,15 @@ def response_handler(buffer):
 
 # modify any requests destined for the remote host
 
+
 def request_handler(buffer):
-    hexdump(buffer)
-    print
+    # hexdump(buffer)    
     # perform packet modifications
     # decode
     # int2byt
+
+    # 包头 msgId(4) Length(4) seq(4) crc(4) compressType(1)
+
     int1 = 0
     msgId = int2 = getIntByIndex(buffer, 0)  # messageid
     sourceLen = int3 = getIntByOffset(buffer, 4)  # sourceLength
@@ -92,42 +100,36 @@ def request_handler(buffer):
 
     global rand_key
     key = proxy.rand_key + getBuf(buffer, 0) + getBuf(buffer,
-                                                4 * 4 + 1) + getBuf(buffer, 3 * 4)
+                                                      4 * 4 + 1) + getBuf(buffer, 3 * 4)
     # print "key:" + key.encode('hex')
     # print 'rand_key' + rand_key.encode('hex')
 
-    print ("sourceLen"+str(int3))
+    print ("sourceLen" + str(int3))
 
     datalen = int3 - 21
     if datalen > 8:
         data = buffer[21:datalen + 21]
 
         source = decrypt(data, key)
-        hexdump(source)
+        hexdump(buffer[0:21] + source)
 
-        # change source.
+        # hack change package.
         # if msgId == 3902:
         #     temp = list(source)
         #     temp[28] = '5f'.decode('hex')
-
         #     temp[29] = 'ffffffff'.decode('hex')
         #     source = "".join(temp)
         #     hexdump(source)
-
         #     to_send = encrypt(source, key)
         #     # encode
-
-        #     #head change 
+        #     #head change
         #     head = buffer[0:21]
         #     head_list = list(head)
         #     head_list[4] = revertStr(len(source)+21)
         #     head = "".join(head_list)
-
         #     buffer = head + to_send
-
         #     hexdump(buffer)
-          
-
     return buffer
+
 
 print 'reload'

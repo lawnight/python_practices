@@ -1,20 +1,27 @@
 # -*- coding: UTF-8 -*-
 import socket
 import struct
-import pyshark
+# import pyshark
 
 # capture = pyshark.LiveCapture(interface='en0',display_filter=False)
 # capture.set_debug()
 # capture.sniff(timeout=10)
 # print capture
 
+# lst = [1,2,3,4,5,6,6,7,8,9]
 
-
-def getWearth():
-    # return '天气:%s-%s 风向:%s' % (
-    #     info['minTem'], info['maxTem'], info['wind'])
-    # return '天气 [%s-%s]  风向 [%s]' % (
-    # '1','1','1')
-    return '哈哈哈'
+# for i in range(0, len(lst), 3):
+#     print lst[i:i + 3]
 
 # print u'哈哈哈'
+
+from flask import Flask
+
+app = Flask(__name__)
+
+@app.route('/')
+def index():
+    return "Hello, World!"
+
+if __name__ == '__main__':
+    app.run(debug=True)
