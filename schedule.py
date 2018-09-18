@@ -8,6 +8,8 @@ from datetime import datetime
 import logging
 import funi
 import analysis_csv
+import news_scrapy
+import utils
 
 #抓取房管局的成交,成交不及时，只有住宅，透明网的数据更有参考性，暂时
 def scrapy_chengjiao():
@@ -21,12 +23,16 @@ def scrapy_funi():
 def analysis():
     analysis_csv.analysis()
 
+def news():
+    return news_scrapy.getInfo()
+
 
 # 输出时间
 def scrapy_job():
-    scrapy_funi()
-
-    analysis()
+    #scrapy_funi()
+    #analysis()
+    info = news()
+    utils.sendMail('我的资讯',info)
 
 # BlockingScheduler
 print('start run this script')

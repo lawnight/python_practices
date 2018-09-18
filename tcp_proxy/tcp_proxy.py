@@ -5,15 +5,10 @@ import socket
 import threading
 import os
 import modify
-
 rand_key = '00'
-
-
 #from modify import request_handler
-
 # this is a pretty hex dumping function directly taken from
 # http://code.activestate.com/recipes/142812-hex-dumper/
-
 
 def hexdump(src, length=16):
     result = []
@@ -169,10 +164,10 @@ def main():
 #     remote_host = sys.argv[1]
 #     remote_port = int(sys.argv[2])
 
-#     remote_host = '192.168.2.207'
+    remote_host = '192.168.2.207'
 #     remote_port = 10001
 
-    remote_host = '192.168.2.207'
+    # remote_host = '192.168.20.97'
     remote_port = 10001
 
     # this tells our proxy to connect and receive data

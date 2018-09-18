@@ -50,4 +50,4 @@ def analysis():
 
             msg = '\n'.join([utils.getTime(), getWearth(),getStock(),str1, str2])
 
-            etils.sendMail('我的资讯',msg )
+            utils.sendMail('我的资讯',msg )

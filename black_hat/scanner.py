@@ -167,4 +167,3 @@ t.start()
 
 # t2.join()
 sniffering()
-
