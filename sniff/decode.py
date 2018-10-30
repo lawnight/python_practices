@@ -3,7 +3,8 @@ import xxtea
 import hexdump
 import settings
 import si
-import struct
+import zlib
+
 #两个字节的key
 rand_key = b'0000'
 
@@ -18,8 +19,6 @@ def dump(src, length=16):
     #     result.append(b"%04X   %-*s   %s" %
     #                   (i, length * (digits + 1), hexa, text))
     # print(b'\n'.join(result))
-    
-    
 
 #一个index，4个字节
 def getIntByIndex(buffer, index):
@@ -29,7 +28,7 @@ def getIntByIndex(buffer, index):
     # bf = bf.encode('hex')
     # return int(bf, 16)
     # python3
-    return str
+    return int.from_bytes(bf, 'little')
 
 def revertStr(num):
     return str("%x" % num).decode('hex')
@@ -77,44 +76,52 @@ def response_handler(buffer):
         # print 'rand_key:' + rand_key.encode('hex')
     return buffer
 
-cacheBuffer = b''
+
 #si具体结构    int类型 1010|0000  前四位代表类型，后四位代表int占用的字节。 1010|1111 占用四个字节的int
+
 
 def handler(buffer):
     # 包头 msgId(4) Length(4) seq(4) crc(4) compressType(1)    
-    headLen = 21    
-    global cacheBuffer
-    cacheBuffer = cacheBuffer + buffer
-    receiveLen = len(cacheBuffer)
+    headLen = 21
+    receiveLen = len(buffer)
     if receiveLen>=headLen:
-        msgId = getIntByIndex(cacheBuffer, 0)        # messageid
-        sourceLen  = getIntByIndex(cacheBuffer, 1)  # sourceLength 包括包头
-        crc = getIntByIndex(cacheBuffer, 3)         # crc 第4个
+        msgId = getIntByIndex(buffer, 0)        # messageid
+        sourceLen  = getIntByIndex(buffer, 1)  # sourceLength 包括包头
+        seq = getIntByIndex(buffer, 2)
+        crc = getIntByIndex(buffer, 3)         # crc 第4个
+        compressType = int.from_bytes(buffer[16:17], 'little')
         #key = _key + mesId+sourceLength+Crc
         global rand_key
-        key = rand_key + getBuf(cacheBuffer, 0) + getBuf(cacheBuffer,
-                                                        4 * 4 + 1) + getBuf(cacheBuffer, 3 * 4)
+        key = rand_key + getBuf(buffer, 0) + getBuf(buffer,
+                                                        4 * 4 + 1) + getBuf(buffer, 3 * 4)
         # print "key:" + key.encode('hex')
         # print 'rand_key' + rand_key.encode('hex')
         # print ("sourceLen" + str(sourceLen))
         # cache没有接收完全的包
-        if sourceLen > receiveLen:            
-            cacheBuffer = cacheBuffer
+        if sourceLen > receiveLen:
             return
         datalen = sourceLen - headLen
         #游戏数据大于8个字节，才会加密
-        print("msgId:",msgId,"len:",sourceLen) 
-        source = cacheBuffer[headLen:datalen + headLen]
+        print("msgId:",msgId,"len:",sourceLen,"seq:",seq) 
+        source = buffer[headLen:(datalen + headLen)]
         if datalen > 8:
             source = decrypt(source, key)  
+            if compressType==1:
+                # 压缩                
+                source = zlib.decompress(source)
         if settings.detail:
-            dump(cacheBuffer[0:headLen] + source)
-            si.decode_si(source)
+            if settings.dump:
+                dump(buffer[0:headLen] + source)
+            if len(source)>0:
+                detail = si.Struct_si(source)
+                data = detail.read()
+                while data:
+                    print(data)
+                    data = detail.read()
             # dump(source)
         if msgId == 3:        
             rand_key = getBuf(buffer, 22)
             print('rand_key',rand_key)
-        #去掉解析后的包
-        cacheBuffer = cacheBuffer[sourceLen::]
-         # 服务器发送的密钥
-        return source
+       
+         # 返回完整的包
+        return buffer[0:headLen] + source

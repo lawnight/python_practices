@@ -70,7 +70,6 @@ def encrypt(data, key):
 
 
 def response_handler(buffer):
-    perform packet modifications
     int2 = getIntByIndex(buffer, 0)  # messageid
     # global rand_key
     # random key
