@@ -118,7 +118,7 @@ class Struct_si():
         for i in range(length):
             key  = self.read()
             value = self.read()
-            data.append({"value":value})
+            data.append(value)
         return data
     def readFloat(self,identity):
         value = 0
@@ -153,26 +153,10 @@ class Struct_si():
                 value =  self.readFloat(identity) 
             if idx==SType['Byte'].value:
                 value =  self.readByte(identity)        
-            data[SType(idx)] = value
-            return data
+            data[SType(idx).name] = value
+            return value
     def show(self):
         print(self.data)
 
 def a(b):
     print(b)
-# b'\x5f\xff\xff\xff\xff'
-# buf = b'x\x9c[\xc8\xe2\x19\xe2\xea{!Y\x961\x91\xed@\xa2V"k \xe3\x81D\xceD\xa6@\xc6@\x81@\xa6`_\xfe@\xa6\x85,\xc9\xd9\x06F\x81\xcc\x13\x18\xd9\x02Y&\xd8[\xccxS\x9a\xc6\x18\xc8\xca\x88E\xb9\x1fXyV\x85\x811H\xb9\x11Hy\xe92\xdc\xca\xfda\xca\x8d\xe0\xca\xcb\xf1(\x0f\x80)7\x84+\xaf\xc2\xa3<\x06\xac\xbc\x18\xaa\x9c\x13\xa4\xfc\xe2G\xb8r]t\xe5\xf1 \xe5\xec\x99%\x96 \x00\xd2\xc1\x08\xd2q\xa4\xd3u\x01X\x07#\x00\xcd\xa5Q\xbc'
-# buf = b'\xd1`{\xb3* \x08wk1g$\xae\xb3"U\x83\x93/\xb5\x82\x8c\x90H\x91\xad\xf2\xa0O\xe5,,3f\xa6hB\x05\x97\xc4(\xc6X\xabv\xaf"\xfa\xbb\xabKR\xaa<x{z#\xc4e\x88\xca\xf0n\x1fs\xe3\xbf]\x04\x91\xe1\xa5d\xceG.\xd3\x00\xd5\x0f\xf8\xa1\xeb,[\\\x9c2*\x0c\xe3\x8f\xeb\xfa\x00zl\x18[[6p\x8d\xb8I\x7f\xd3\xf1\x036\x91\xfbL\x1f\x15\x91RT\xf6\xda\x8bR\xd0\x85\xa9\xdd\xdd\x94\x8f\xd5\x9f\x81\x06\xb6\xe6P \x9c6Q\xbc'
-# a = Struct_si(bytes.fromhex('D0610261015103'))
-# print(len(buf))
-# print(buf)
-
-# print(list(buf))
-
-# buf = zlib.decompress(buf, zlib.MAX_WBITS | 16)
-
-# a = Struct_si(buf)
-# data = a.read()
-# while data:
-#     print(data)
-#     data = a.read()

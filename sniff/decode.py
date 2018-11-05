@@ -4,6 +4,7 @@ import hexdump
 import settings
 import si
 import zlib
+import json
 
 #两个字节的key
 rand_key = b'0000'
@@ -101,10 +102,10 @@ def handler(buffer):
         if sourceLen > receiveLen:
             return
         datalen = sourceLen - headLen
-        #游戏数据大于8个字节，才会加密
+        #游戏数据大于等于8个字节，才会加密
         print("msgId:",msgId,"len:",sourceLen,"seq:",seq) 
         source = buffer[headLen:(datalen + headLen)]
-        if datalen > 8:
+        if datalen >= 8:
             source = decrypt(source, key)  
             if compressType==1:
                 # 压缩                
@@ -115,7 +116,8 @@ def handler(buffer):
             if len(source)>0:
                 detail = si.Struct_si(source)
                 data = detail.read()
-                while data:
+                while data != None:
+                    # js = json.dumps(data, sort_keys=True, indent=4, separators=(',', ':'))
                     print(data)
                     data = detail.read()
             # dump(source)
