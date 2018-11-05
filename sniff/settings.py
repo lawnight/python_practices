@@ -4,8 +4,10 @@ mode = "file"
 # fileName =  '/Users/near/work/qs.pcapng'
 # port = 20001
 # 战国
-fileName = '/Users/near/war.pcapng'
+# fileName = '/Users/near/war.pcapng'
+
 port = 10001
+fileName = '/Users/near/Downloads/server (1).pcap'
 
 #打印包的具体字节
 detail = True

@@ -3,6 +3,7 @@
 from enum import Enum
 import struct
 import zlib
+import decode
 
 class SType (Enum):
     Boolean =0
@@ -19,6 +20,16 @@ class SType (Enum):
     ByteArray = 11 << 4
     Map =12 << 4
     List=13 << 4
+
+class Packet(object):
+    buf = ''
+    msgId = 0
+    length = 0
+
+    def __init__(self,msgId,length,buf):
+        self.msgId = msgId
+        self.length = length
+        self.buf=buf
 
 class ByteStream():
     buf = None
@@ -37,6 +48,7 @@ class ByteStream():
     def hasData(self):
         return len(self.buf) > self.idx       
 
+#si具体结构    int类型 1010|0000  前四位代表类型，后四位代表int占用的字节。 1010|1111 占用四个字节的int
 class Struct_si():
     buf = None    
     data = {}
@@ -158,5 +170,59 @@ class Struct_si():
     def show(self):
         print(self.data)
 
-def a(b):
-    print(b)
+class Session():
+    aIP = ''
+    bIP = ''
+    aBuf = b''
+    bBuf = b''
+    # 缓存的buff数据
+    bufs = {}
+    # 需要分析的数据 time和包
+    pkts = {}
+    randKey = b'0000'
+
+    def __init__(self,src,dst):
+        self.aIP=src
+        self.bIP=dst        
+        self.bufs[src] = b''
+        self.bufs[dst] = b''
+        self.pkts = {}
+        self.randKey = b'0000'
+
+    def receiveBuf(self,srcIp,buf,time):  
+        if self.bufs[srcIp] != None:
+            self.bufs[srcIp] = self.bufs[srcIp] + buf
+            pkt = decode.handler(self.bufs[srcIp],self.randKey)
+            if pkt:
+                if pkt.msgId == 3:   
+                    key = pkt.buf[22:22 + 4]
+                    length = len(key)
+                    self.randKey =  key   + b'\x00' * (4 - length)          
+                #去掉解析后的包
+                self.bufs[srcIp] = self.bufs[srcIp][pkt.length::]
+                # 记录包
+                self.pkts[time] = pkt              
+            
+    def getLine(self):
+        return self.pkts
+
+
+sessionMap = {}
+def getSession(key):
+    global sessionMap   
+    if key in sessionMap.keys():    
+        session = sessionMap[key]
+    else:
+        v = key.split(',')
+        session = Session(v[0],v[1])
+        sessionMap[key] = session
+    return session
+
+def receive(src,dst,game_packet,time):
+    if src < dst:
+        key = src +','+ dst
+    else:
+        key = dst +','+ src
+    
+    session = getSession(key)
+    session.receiveBuf(src,game_packet,time)
