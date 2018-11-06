@@ -74,8 +74,8 @@ def handler(buffer,rand_key):
         compressType = int.from_bytes(buffer[16:17], 'little')       
         key = rand_key + getBuf(buffer, 0) + getBuf(buffer,
                                                         4 * 4 + 1) + getBuf(buffer, 3 * 4)
-        print (key,len(key))
-        print (rand_key,len(rand_key))
+        # print (key,len(key))
+        # print (rand_key,len(rand_key))
         # print ("sourceLen" + str(sourceLen))
         # cache没有接收完全的包
         if sourceLen > receiveLen:
@@ -90,16 +90,14 @@ def handler(buffer,rand_key):
                 # 解压缩             
                 source = zlib.decompress(source)
         # 输出信息
+        # if settings.filter_msgId and settings.filter_msgId == msgId:
         if settings.detail:
             if settings.dump:
                 dump(buffer[0:headLen] + source)
+                print(source)
+            # 解析si的具体信息
             if len(source)>0:
-                detail = si.Struct_si(source)
-                data = detail.read()
-                while data != None:
-                    # js = json.dumps(data, sort_keys=True, indent=4, separators=(',', ':'))
-                    print(data)
-                    data = detail.read()
+                si.show_si(source)
             # dump(source)
        
          # 返回完整的包

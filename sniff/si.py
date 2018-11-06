@@ -4,6 +4,11 @@ from enum import Enum
 import struct
 import zlib
 import decode
+import xxtea
+import hexdump
+import settings
+
+headLen = 21
 
 class SType (Enum):
     Boolean =0
@@ -22,14 +27,24 @@ class SType (Enum):
     List=13 << 4
 
 class Packet(object):
+    # 内容
     buf = ''
+    # 协议id
     msgId = 0
+    # 长度
     length = 0
+    seq = 0
+    crc = 0
+    compressType = 0    
 
-    def __init__(self,msgId,length,buf):
+    def __init__(self,msgId,length,buffer):
         self.msgId = msgId
+        # 原来包的大小（解密，解压前）
         self.length = length
-        self.buf=buf
+        self.buf=buffer    
+        self.seq = getIntByIndex(buffer, 2)
+        self.crc = getIntByIndex(buffer, 3)         # crc 第4个
+        self.compressType = int.from_bytes(buffer[16:17], 'little')  
 
 class ByteStream():
     buf = None
@@ -47,8 +62,16 @@ class ByteStream():
         return data 
     def hasData(self):
         return len(self.buf) > self.idx       
-
+# 包头 msgId(4) Length(4) seq(4) crc(4) compressType(1)    
 #si具体结构    int类型 1010|0000  前四位代表类型，后四位代表int占用的字节。 1010|1111 占用四个字节的int
+# /** 心跳请求消息id */
+# public static final int REQUEST_HEARTBEAT = 0;
+# /** 心跳响应消息id */
+# public static final int RESPONSE_HEARTBEAT = 1;
+# /** 生成编解码key请求消息id */
+# public static final int REQUEST_GENERATE_ENCODE_KEY = 2;
+# /** 生成编解码key响应消息id */
+# public static final int RESPONSE_GENERATE_ENCODE_KEY = 3;
 class Struct_si():
     buf = None    
     data = {}
@@ -168,8 +191,9 @@ class Struct_si():
             data[SType(idx).name] = value
             return value
     def show(self):
-        print(self.data)
+         (self.data)
 
+# 双向链接
 class Session():
     aIP = ''
     bIP = ''
@@ -178,7 +202,7 @@ class Session():
     # 缓存的buff数据
     bufs = {}
     # 需要分析的数据 time和包
-    pkts = {}
+    pkts = []
     randKey = b'0000'
 
     def __init__(self,src,dst):
@@ -186,26 +210,82 @@ class Session():
         self.bIP=dst        
         self.bufs[src] = b''
         self.bufs[dst] = b''
-        self.pkts = {}
+        self.pkts = []
         self.randKey = b'0000'
+    
+    def getPacket(self,buffer):        
+        headLen = 21
+        receiveLen = len(buffer)
+        if receiveLen>=headLen:            
+            packetLen  = getIntByIndex(buffer, 1)   # packetLen 包括包头            
+            if packetLen > receiveLen:
+                return
+            msgId = getIntByIndex(buffer, 0)        # messageid            
+            seq = getIntByIndex(buffer, 2)            
+            datalen = packetLen - headLen         
+               
+            print("msgId:",msgId,"len:",packetLen,"seq:",seq) 
+            source = buffer[headLen:(datalen + headLen)]
+            # 返回完整的包
+            return Packet(msgId,packetLen,buffer[0:headLen] + source)
+    
+    def show(self):
+        print(self.aIP,self.bIP)
+        data = [(str(x.msgId)+","+str(x.seq)) for x in self.pkts]
+        print(len(data))
+        print(data)
+        # for p in self.pkts:           
+        #     print('dump msg:',p.msgId,p.length)
+            # print(p.buf,p.length,p.compressType)
+            # buf = decode_buf(p.buf,p.compressType,self.randKey)
+            # if settings.detail:
+            #     if settings.dump:
+            #         dump(buf)                    
+            #     # 解析si的具体信息
+            #     source = buf[headLen::]
+            #     if len(source)>0:
+            #         show_si(source)
 
     def receiveBuf(self,srcIp,buf,time):  
         if self.bufs[srcIp] != None:
-            self.bufs[srcIp] = self.bufs[srcIp] + buf
-            pkt = decode.handler(self.bufs[srcIp],self.randKey)
+            self.bufs[srcIp] = self.bufs[srcIp] + buf            
+            pkt = decode.handler(self.bufs[srcIp],self.randKey) #   self.getPacket(self.bufs[srcIp])
             if pkt:
                 if pkt.msgId == 3:   
                     key = pkt.buf[22:22 + 4]
                     length = len(key)
+                    # key需要补足4个字节
                     self.randKey =  key   + b'\x00' * (4 - length)          
                 #去掉解析后的包
                 self.bufs[srcIp] = self.bufs[srcIp][pkt.length::]
                 # 记录包
-                self.pkts[time] = pkt              
-            
-    def getLine(self):
-        return self.pkts
+                self.pkts.append(pkt)
 
+#一个index，4个字节
+def getIntByIndex(buffer, index):
+    bf = buffer[index * 4:index * 4 + 4]
+    return int.from_bytes(bf, 'little')
+
+def getBuf(buffer, offset):
+    bf = buffer[offset:offset + 4]
+    return bf
+
+def decrypt(data, key):
+    if len(data) <= 3:
+        return data
+    # data length is not a multiple of 4, or less than 8.
+    padding = len(data) // 4 * 4
+    to_data = data[0:padding]
+    # print 'data' + str(len(data))
+    # print 'to_data:' + str(len(to_data))
+    plain = ''
+    plain = xxtea.decrypt(to_data, key,False)
+    if padding < len(data):
+        plain = plain + data[padding::]
+    return plain
+
+def dump(src, length=16):
+    hexdump.hexdump(src)
 
 sessionMap = {}
 def getSession(key):
@@ -218,6 +298,7 @@ def getSession(key):
         sessionMap[key] = session
     return session
 
+# src->dst
 def receive(src,dst,game_packet,time):
     if src < dst:
         key = src +','+ dst
@@ -226,3 +307,28 @@ def receive(src,dst,game_packet,time):
     
     session = getSession(key)
     session.receiveBuf(src,game_packet,time)
+
+def decode_buf(buf,compressType,rkey):
+    print('decode',buf,rkey)
+    datalen = len(buf) - headLen
+    source = buf[headLen:(datalen + headLen)]
+    if datalen >= 8:
+        rkey = rkey + getBuf(buf, 0) + getBuf(buf,4 * 4 + 1) + getBuf(buf, 3 * 4)
+        source = decrypt(source, rkey)  
+        if compressType==1:
+            # 解压缩             
+            source = zlib.decompress(source)
+    return buf[0:headLen] + source
+
+
+def show_si(buf):
+    detail = Struct_si(buf)
+    data = detail.read()
+    while data != None:
+        # js = json.dumps(data, sort_keys=True, indent=4, separators=(',', ':'))
+        print(data)
+        data = detail.read()
+
+# b = b'\xa5.\xf2#\x05%\xc2;|\x8e\xd0e\xadO_NG\x1b,n8\xe6\x9d\xf8\xb93\x93\x1bQ\x03P'
+# a = Struct_si(b)
+# a.read()

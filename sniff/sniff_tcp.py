@@ -21,26 +21,24 @@ def packet_scapy(packet):
         src = packet[IP].src
         dst = packet[IP].dst
         session_key = "[%-15s]>>>>>>>>>>>>[%s]" % (src,dst)  
-        print(session_key)
+       
         si.receive(src,dst,game_packet,packet.time)
 
 print('开始抓包……%s'%(datetime.now()))
 
 def anlysis(fileName,port):
-    global session
-    session = None
     pkts = rdpcap(fileName)       
     # and (x[IP].src=='192.168.101.60' or x[IP].dst == '192.168.101.60') 
     filter_pkts = pkts.filter(lambda x:TCP in x and (x[TCP].sport == port  or x[TCP].dport == port) )
     for pkt in filter_pkts:
-        # pkt.show()
         packet_scapy(pkt)
-    # filter_pkts.plot()
 print("结束抓包")
 if settings.mode == 'sniff':
     packets = sniff(filter="tcp port 10001",prn=packet_scapy,store=0)
 else:
     anlysis(settings.fileName,settings.port)
+    for v in si.sessionMap.values():
+        v.show()
 
 # 平均响应时间
     

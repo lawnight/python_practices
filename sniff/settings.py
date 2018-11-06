@@ -8,8 +8,11 @@ mode = "file"
 
 port = 10001
 fileName = '/Users/near/Downloads/server (1).pcap'
+# fileName = '/Users/near/Downloads/server.pcap'
 
 #打印包的具体字节
 detail = True
 # 是否dump 二进制
 dump = False
+
+filter_msgId = 2209
