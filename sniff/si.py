@@ -3,10 +3,10 @@
 from enum import Enum
 import struct
 import zlib
-import decode
 import xxtea
 import hexdump
 import settings
+from scapy.all import *
 
 headLen = 21
 
@@ -37,7 +37,7 @@ class Packet(object):
     crc = 0
     compressType = 0    
 
-    def __init__(self,msgId,length,buffer):
+    def __init__(self,msgId,length,buffer,time):
         self.msgId = msgId
         # 原来包的大小（解密，解压前）
         self.length = length
@@ -45,7 +45,7 @@ class Packet(object):
         self.seq = getIntByIndex(buffer, 2)
         self.crc = getIntByIndex(buffer, 3)         # crc 第4个
         self.compressType = int.from_bytes(buffer[16:17], 'little')  
-
+        self.time = time
 class ByteStream():
     buf = None
     idx = 0
@@ -193,27 +193,19 @@ class Struct_si():
     def show(self):
          (self.data)
 
-# 双向链接
+# 双向链接 (因为公用一个密钥，所以放在一起)
 class Session():
-    aIP = ''
-    bIP = ''
-    aBuf = b''
-    bBuf = b''
-    # 缓存的buff数据
-    bufs = {}
-    # 需要分析的数据 time和包
-    pkts = []
-    randKey = b'0000'
-
-    def __init__(self,src,dst):
+    def __init__(self,key):
+        src,dst = key.split('||')
         self.aIP=src
-        self.bIP=dst        
+        self.bIP=dst  
+        self.bufs={}    # 缓存的buff数据   
         self.bufs[src] = b''
         self.bufs[dst] = b''
         self.pkts = []
         self.randKey = b'0000'
     
-    def getPacket(self,buffer):        
+    def getPacket(self,buffer,time):        
         headLen = 21
         receiveLen = len(buffer)
         if receiveLen>=headLen:            
@@ -224,42 +216,46 @@ class Session():
             seq = getIntByIndex(buffer, 2)            
             datalen = packetLen - headLen         
                
-            print("msgId:",msgId,"len:",packetLen,"seq:",seq) 
+            # print("msgId:",msgId,"len:",packetLen,"seq:",seq) 
             source = buffer[headLen:(datalen + headLen)]
             # 返回完整的包
-            return Packet(msgId,packetLen,buffer[0:headLen] + source)
+            return Packet(msgId,packetLen,buffer[0:headLen] + source,time)
     
     def show(self):
-        print(self.aIP,self.bIP)
-        data = [(str(x.msgId)+","+str(x.seq)) for x in self.pkts]
+        print(self.aIP,self.bIP)        
+        for p in self.pkts:           
+            print('dump msg:',p.msgId,p.length)
+            buf = decode_buf(p.buf,p.compressType,self.randKey)
+            if settings.detail:
+                if settings.dump:
+                    dump(buf)                    
+                # 解析si的具体信息
+                source = buf[headLen::]
+                if len(source)>0:
+                    show_si(source)
+    def show_brife(self):
+        data = [",".join([str(x.msgId),str(x.seq)]) for x in self.pkts]
         print(len(data))
         print(data)
-        # for p in self.pkts:           
-        #     print('dump msg:',p.msgId,p.length)
-            # print(p.buf,p.length,p.compressType)
-            # buf = decode_buf(p.buf,p.compressType,self.randKey)
-            # if settings.detail:
-            #     if settings.dump:
-            #         dump(buf)                    
-            #     # 解析si的具体信息
-            #     source = buf[headLen::]
-            #     if len(source)>0:
-            #         show_si(source)
-
     def receiveBuf(self,srcIp,buf,time):  
         if self.bufs[srcIp] != None:
-            self.bufs[srcIp] = self.bufs[srcIp] + buf            
-            pkt = decode.handler(self.bufs[srcIp],self.randKey) #   self.getPacket(self.bufs[srcIp])
-            if pkt:
+            self.bufs[srcIp] = self.bufs[srcIp] + buf  
+            print(self.aIP,self.bIP)            
+            pkt =self.getPacket(self.bufs[srcIp],time) # decode.handler(self.bufs[srcIp],self.randKey) #   
+            if pkt:                   
                 if pkt.msgId == 3:   
                     key = pkt.buf[22:22 + 4]
                     length = len(key)
                     # key需要补足4个字节
-                    self.randKey =  key   + b'\x00' * (4 - length)          
+                    self.randKey =  key   + b'\x00' * (4 - length)
                 #去掉解析后的包
                 self.bufs[srcIp] = self.bufs[srcIp][pkt.length::]
                 # 记录包
                 self.pkts.append(pkt)
+    def getLine(self):
+        s = pd.Series((x.length for x in s.pkts),index=(x.time for x in s.pkts))
+        s.index = pd.to_datetime(s.index,unit='s')
+        return s
 
 #一个index，4个字节
 def getIntByIndex(buffer, index):
@@ -293,23 +289,35 @@ def getSession(key):
     if key in sessionMap.keys():    
         session = sessionMap[key]
     else:
-        v = key.split(',')
-        session = Session(v[0],v[1])
+        
+        session = Session(key)
         sessionMap[key] = session
     return session
 
 # src->dst
-def receive(src,dst,game_packet,time):
+def receive(packet,time):
+    ip_src_fmt = "{IP:%IP.src%}{IPv6:%IPv6.src%}"
+    ip_dst_fmt = "{IP:%IP.dst%}{IPv6:%IPv6.dst%}"
+    addr_fmt = (ip_src_fmt, ip_dst_fmt)
+    fmt = "{}:%r,TCP.sport% || {}:%r,TCP.dport%"
+
+    key = packet.sprintf(fmt.format(*addr_fmt))
+    src,dst = key.split('||')
+    src,dst = src.strip(),dst.strip()
+    session_key = ''
     if src < dst:
-        key = src +','+ dst
+        session_key = src + "||" + dst
     else:
-        key = dst +','+ src
-    
-    session = getSession(key)
+        session_key = dst + "||" + src
+    # print('src [%s]'%src)
+    # print('dst [%s]'%dst)
+    # print('session_key',session_key)
+    session = getSession(session_key)
+
+    game_packet = packet[TCP].load
     session.receiveBuf(src,game_packet,time)
 
 def decode_buf(buf,compressType,rkey):
-    print('decode',buf,rkey)
     datalen = len(buf) - headLen
     source = buf[headLen:(datalen + headLen)]
     if datalen >= 8:

@@ -7,7 +7,7 @@ mode = "file"
 # fileName = '/Users/near/war.pcapng'
 
 port = 10001
-fileName = '/Users/near/Downloads/server (1).pcap'
+fileName = '/Users/near/Downloads/server (2).pcap'
 # fileName = '/Users/near/Downloads/server.pcap'
 
 #打印包的具体字节
