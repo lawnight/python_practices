@@ -4,8 +4,10 @@ import sys
 import socket
 import threading
 import os
-rand_key = '00'
 import hexdump
+import sys
+import sniff.si as si
+import re
 #from modify import request_handler
 # this is a pretty hex dumping function directly taken from
 # http://code.activestate.com/recipes/142812-hex-dumper/
@@ -29,11 +31,14 @@ def receive_from(connection):
     return buffer
 
 
-def proxy_handler(client_socket, remote_host, remote_port, receive_first):
+def proxy_handler(client_socket,addr, remote_host, remote_port, receive_first):
+    client_socket
     # connect to the remote host
     remote_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     remote_socket.connect((remote_host, remote_port))
     print('链接远端{}'.format(remote_port))
+
+    cIp,cPort = addr
     # receive data from the remote end if necessary
     if receive_first:
         remote_buffer = receive_from(remote_socket)
@@ -51,43 +56,33 @@ def proxy_handler(client_socket, remote_host, remote_port, receive_first):
         # read from local host
         local_buffer = receive_from(client_socket)
         llen = len(local_buffer)
-        if llen:
-            print ("[==>] Received %d bytes from localhost." % llen)
-            
-            hexdump.hexdump(local_buffer)
-            remote_socket.send(local_buffer)
-            print ("[==>] Sent to remote.")
-
+        if llen:            
+            print ("[==>] send %d bytes to remote." % llen)
+            local_buffer = request_handler(cIp,cPort,remote_host, remote_port,local_buffer) 
+            if local_buffer:           
+                remote_socket.send(local_buffer)
         # receive back the response
         remote_buffer = receive_from(remote_socket)
         rlen = len(remote_buffer)
         if rlen:
-
             print ("[<==] Received %d bytes from remote." % rlen)
-
-
-            # send to our response handler
-            # remote_buffer = modify.response_handler(remote_buffer)
-
-            # send the response to the local socket
+            remote_buffer = response_handler(remote_host, remote_port,cIp,cPort,remote_buffer)
             client_socket.send(remote_buffer)
-
-            print("[<==] Sent to localhost.")
-
+            # print("[<==] Sent to localhost.")
         # # if no more data on either side close the connections
         # if not len(local_buffer) or not len(remote_buffer):
         # 	client_socket.close()
         # 	remote_socket.close()
         # 	print "[*] No more data. Closing connections."
-
         # 	break
 
 def main():
     # setup local listening parameters
     local_host = '0.0.0.0'  # sys.argv[1]
-    local_port = 20001  # int(sys.argv[2])
-    remote_host = '114.116.11.81'
-    remote_port = 20001
+    
+    # remote_host = '114.116.11.81'
+    remote_host = '192.168.2.207'
+    remote_port = local_port= 10001
 
     proxy_thread = threading.Thread(target=proxy,args=(local_host,local_port,remote_host,remote_port))
     proxy_thread.start()
@@ -118,8 +113,54 @@ def proxy(local_host,local_port,remote_host,remote_port):
         print ("%d [==>] Received incoming connection from %s:%d" % (local_port,addr[0], addr[1]))
         # start a thread to talk to the remote host
         proxy_thread = threading.Thread(target=proxy_handler, args=(
-            client_socket, remote_host, remote_port, receive_first))
+            client_socket,addr, remote_host, remote_port, receive_first))
         proxy_thread.start()
+
+
+# python3 修改茜色
+def request_handler(cIp,cPort,dIp, dPort,buffer):
+    se,pkts = si.receive(cIp,cPort,dIp,dPort,buffer)   
+    result = b'' 
+    if pkts:
+        for pkt in pkts:
+            data = pkt.buf
+            if pkt.msgId == 3902:
+                o_data = si.decode_buf(pkt.buf,se.randKey)
+                temp = bytearray(o_data)
+                key = b'\x51\x01'                
+                # print('find',re.findall(key,temp))
+                pos = temp.rfind(key)
+                temp =temp[:pos] + temp[pos:].replace(key,b'\x5f\xff\xff\xff\xff')
+                si.show_si(temp)
+                # 1变成-1
+                to_send = si.encode_buf(bytes(temp), se.randKey)
+                head = to_send[0:21]
+                head = bytearray(head)
+                head[4:8] = (len(to_send).to_bytes(4,'little'))
+                
+                data = head + to_send[21::]
+            result = result + data
+    return result
+
+def response_handler(cIp,cPort,dIp, dPort,buffer):
+    si.receive(cIp,cPort,dIp,dPort,buffer)
+    return buffer
+# hack change package.  \x50 int的标志
+# if msgId == 3902:
+#     temp = list(source)
+#     temp[28] = '5f'.decode('hex')
+#     temp[29] = 'ffffffff'.decode('hex')
+#     source = "".join(temp)
+#     hexdump(source)
+#     to_send = encrypt(source, key)
+#     # encode
+#     #head change
+#     head = buffer[0:21]
+#     head_list = list(head)
+#     head_list[4] = revertStr(len(source)+21)
+#     head = "".join(head_list)
+#     buffer = head + to_send
+#     hexdump(buffer)
 
 # print str("%x" % 11).decode('hex')
 if __name__ == '__main__':

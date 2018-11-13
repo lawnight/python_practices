@@ -20,8 +20,11 @@ def packet_scapy(packet):
         src = packet[IP].src
         dst = packet[IP].dst
         session_key = "[%-15s]>>>>>>>>>>>>[%s]" % (src,dst)  
-       
-        si.receive(packet,packet.time)
+        sPort = packet[TCP].sport
+        dPort = packet[TCP].dport
+
+        game_packet = packet[TCP].load
+        si.receive(src,sPort,dst,dPort,game_packet,packet.time)
 
 print('开始抓包……%s'%(datetime.now()))
 

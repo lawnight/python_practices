@@ -169,6 +169,7 @@ class HttpParser(object):
                 # 替换，压缩
                 self.body = gzip_compress.compress(self.body) + gzip_compress.flush()
                 size = len(self.body)
+                # 先是chunked的长度，特殊的assic
                 self.body = format(size,'x').encode() + CRLF+ self.body + CRLF + b'0' +CRLF+CRLF
                 self.method = b''
                 self.modifyRaw = self.build_response()

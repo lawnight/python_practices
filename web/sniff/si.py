@@ -5,7 +5,7 @@ import struct
 import zlib
 import xxtea
 import hexdump
-import settings
+from . import settings
 from scapy.all import *
 
 headLen = 21
@@ -216,7 +216,7 @@ class Session():
             seq = getIntByIndex(buffer, 2)            
             datalen = packetLen - headLen         
                
-            # print("msgId:",msgId,"len:",packetLen,"seq:",seq) 
+            print("msgId:",msgId,"len:",packetLen,"seq:",seq) 
             source = buffer[headLen:(datalen + headLen)]
             # 返回完整的包
             return Packet(msgId,packetLen,buffer[0:headLen] + source,time)
@@ -225,7 +225,7 @@ class Session():
         print(self.aIP,self.bIP)        
         for p in self.pkts:           
             print('dump msg:',p.msgId,p.length)
-            buf = decode_buf(p.buf,p.compressType,self.randKey)
+            buf = decode_buf(p.buf,self.randKey,p.compressType)
             if settings.detail:
                 if settings.dump:
                     dump(buf)                    
@@ -233,6 +233,14 @@ class Session():
                 source = buf[headLen::]
                 if len(source)>0:
                     show_si(source)
+    def show_packet(self,p):
+        print('pkt msg:',p.msgId,p.length)
+        buf = decode_buf(p.buf,self.randKey,p.compressType)                
+        # 解析si的具体信息
+        source = buf[headLen::]
+        if len(source)>0:
+            show_si(source)
+        
     def show_brife(self):
         data = [",".join([str(x.msgId),str(x.seq)]) for x in self.pkts]
         print(len(data))
@@ -240,18 +248,27 @@ class Session():
     def receiveBuf(self,srcIp,buf,time):  
         if self.bufs[srcIp] != None:
             self.bufs[srcIp] = self.bufs[srcIp] + buf  
-            print(self.aIP,self.bIP)            
-            pkt =self.getPacket(self.bufs[srcIp],time) # decode.handler(self.bufs[srcIp],self.randKey) #   
-            if pkt:                   
-                if pkt.msgId == 3:   
-                    key = pkt.buf[22:22 + 4]
-                    length = len(key)
-                    # key需要补足4个字节
-                    self.randKey =  key   + b'\x00' * (4 - length)
-                #去掉解析后的包
-                self.bufs[srcIp] = self.bufs[srcIp][pkt.length::]
-                # 记录包
-                self.pkts.append(pkt)
+            # print(self.aIP,self.bIP)     
+            result = []  
+            while True:
+                pkt =self.getPacket(self.bufs[srcIp],time) # decode.handler(self.bufs[srcIp],self.randKey) #   
+                if pkt:                   
+                    if pkt.msgId == 3:   
+                        key = pkt.buf[22:22 + 4]
+                        length = len(key)
+                        # key需要补足4个字节
+                        self.randKey =  key   + b'\x00' * (4 - length)
+                    #去掉解析后的包
+                    self.bufs[srcIp] = self.bufs[srcIp][pkt.length::]
+                    # 记录包
+                    self.pkts.append(pkt)
+                    # 实时show pkt
+                    if settings.detail:
+                        self.show_packet(pkt)
+                    result.append(pkt)
+                else:
+                    break
+            return result
     def getLine(self):
         s = pd.Series((x.length for x in s.pkts),index=(x.time for x in s.pkts))
         s.index = pd.to_datetime(s.index,unit='s')
@@ -280,8 +297,21 @@ def decrypt(data, key):
         plain = plain + data[padding::]
     return plain
 
+# 加密
+def encrypt(data, key):
+    if len(data) <= 3:
+        return data
+    padding = len(data) // 4 * 4
+    to_data = data[0:padding]
+    cipher = xxtea.encrypt(to_data, key,False)
+    if padding < len(data):
+        cipher = cipher + data[padding::]
+    return cipher
+
+
 def dump(src, length=16):
     hexdump.hexdump(src)
+
 
 sessionMap = {}
 def getSession(key):
@@ -295,13 +325,9 @@ def getSession(key):
     return session
 
 # src->dst
-def receive(packet,time):
-    ip_src_fmt = "{IP:%IP.src%}{IPv6:%IPv6.src%}"
-    ip_dst_fmt = "{IP:%IP.dst%}{IPv6:%IPv6.dst%}"
-    addr_fmt = (ip_src_fmt, ip_dst_fmt)
-    fmt = "{}:%r,TCP.sport% || {}:%r,TCP.dport%"
-
-    key = packet.sprintf(fmt.format(*addr_fmt))
+def receive(sIp,sPort,dIp,dPort,packet,time=0):
+    '''会创建合适的session，包括key'''
+    key = '{sIp}:{sPort}||{dIp}:{dPort}'.format(sIp=sIp,sPort=sPort,dIp=dIp,dPort=dPort)
     src,dst = key.split('||')
     src,dst = src.strip(),dst.strip()
     session_key = ''
@@ -314,10 +340,9 @@ def receive(packet,time):
     # print('session_key',session_key)
     session = getSession(session_key)
 
-    game_packet = packet[TCP].load
-    session.receiveBuf(src,game_packet,time)
+    return session,session.receiveBuf(src,packet,time)
 
-def decode_buf(buf,compressType,rkey):
+def decode_buf(buf,rkey,compressType=0):
     datalen = len(buf) - headLen
     source = buf[headLen:(datalen + headLen)]
     if datalen >= 8:
@@ -328,15 +353,22 @@ def decode_buf(buf,compressType,rkey):
             source = zlib.decompress(source)
     return buf[0:headLen] + source
 
+def encode_buf(buf,rkey,compressType=0):
+    datalen = len(buf) - headLen
+    source = buf[headLen:(datalen + headLen)]
+    if datalen >= 8:
+        rkey = rkey + getBuf(buf, 0) + getBuf(buf,4 * 4 + 1) + getBuf(buf, 3 * 4)        
+        if compressType==1:
+            # 解压缩             
+            source = zlib.compress(source)
+        source = encrypt(source, rkey)
+    return buf[0:headLen] + source
 
 def show_si(buf):
+    buf = buf[headLen::]
     detail = Struct_si(buf)
     data = detail.read()
     while data != None:
         # js = json.dumps(data, sort_keys=True, indent=4, separators=(',', ':'))
         print(data)
         data = detail.read()
-
-# b = b'\xa5.\xf2#\x05%\xc2;|\x8e\xd0e\xadO_NG\x1b,n8\xe6\x9d\xf8\xb93\x93\x1bQ\x03P'
-# a = Struct_si(b)
-# a.read()

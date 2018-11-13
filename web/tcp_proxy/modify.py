@@ -14,7 +14,6 @@ def hexdump(src, length=16):
                       (i, length * (digits + 1), hexa, text))
     print b'\n'.join(result)
 
-
 #一个index，4个字节
 def getIntByIndex(buffer, index):
     bf = buffer[index * 4:index * 4 + 4]
@@ -104,8 +103,8 @@ def request_handler(buffer):
 
         source = decrypt(data, key)
         hexdump(buffer[0:21] + source)
-        # \x50 int的标志
-        # hack change package.
+
+        # hack change package.  \x50 int的标志
         # if msgId == 3902:
         #     temp = list(source)
         #     temp[28] = '5f'.decode('hex')
