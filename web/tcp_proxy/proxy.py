@@ -7,6 +7,8 @@
     :copyright: (c) 2013 by Abhinav Singh.
     :license: BSD, see LICENSE for more details.
     :https://github.com/abhinavsingh/proxy.py
+
+    http代理，修改response。
 """
 import sys
 import datetime

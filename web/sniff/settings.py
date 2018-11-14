@@ -14,6 +14,6 @@ port = 10001
 #打印包的具体字节
 detail = True
 # 是否dump 二进制
-dump = False
+dump = True
 # 过滤的msgid
 filter_msgId = 2209

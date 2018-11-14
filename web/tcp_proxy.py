@@ -80,9 +80,10 @@ def main():
     # setup local listening parameters
     local_host = '0.0.0.0'  # sys.argv[1]
     
-    # remote_host = '114.116.11.81'
-    remote_host = '192.168.2.207'
-    remote_port = local_port= 10001
+    remote_host = '114.116.11.81'
+    # remote_host = '192.168.2.207'
+    port = 20011
+    remote_port = local_port= port
 
     proxy_thread = threading.Thread(target=proxy,args=(local_host,local_port,remote_host,remote_port))
     proxy_thread.start()
@@ -123,45 +124,33 @@ def request_handler(cIp,cPort,dIp, dPort,buffer):
     result = b'' 
     if pkts:
         for pkt in pkts:
-            data = pkt.buf
-            if pkt.msgId == 3902:
-                o_data = si.decode_buf(pkt.buf,se.randKey)
-                temp = bytearray(o_data)
-                key = b'\x51\x01'                
-                # print('find',re.findall(key,temp))
-                pos = temp.rfind(key)
-                temp =temp[:pos] + temp[pos:].replace(key,b'\x5f\xff\xff\xff\xff')
-                si.show_si(temp)
-                # 1变成-1
-                to_send = si.encode_buf(bytes(temp), se.randKey)
-                head = to_send[0:21]
-                head = bytearray(head)
-                head[4:8] = (len(to_send).to_bytes(4,'little'))
-                
-                data = head + to_send[21::]
+            data = processBR(pkt,se.randKey)
             result = result + data
     return result
+
+# 陆百购买协议的修改
+def processBR(pkt,randKey):
+    if pkt.msgId == 3902:
+        o_data = si.decode_buf(pkt.buf,randKey)
+        temp = bytearray(o_data)
+        key = b'\x51\x01'                
+        # print('find',re.findall(key,temp))
+        pos = temp.rfind(key)
+        # 1变成-1
+        temp =temp[:pos] + temp[pos:].replace(key,b'\x5f\xff\xff\xff\xff')
+        si.show_si(temp)                
+        to_send = si.encode_buf(bytes(temp), randKey)
+        # 修正包头的长度
+        head = to_send[0:21]
+        head = bytearray(head)
+        head[4:8] = (len(to_send).to_bytes(4,'little'))                
+        data = head + to_send[21::]
+        return data
+    return pkt.buf
 
 def response_handler(cIp,cPort,dIp, dPort,buffer):
     si.receive(cIp,cPort,dIp,dPort,buffer)
     return buffer
-# hack change package.  \x50 int的标志
-# if msgId == 3902:
-#     temp = list(source)
-#     temp[28] = '5f'.decode('hex')
-#     temp[29] = 'ffffffff'.decode('hex')
-#     source = "".join(temp)
-#     hexdump(source)
-#     to_send = encrypt(source, key)
-#     # encode
-#     #head change
-#     head = buffer[0:21]
-#     head_list = list(head)
-#     head_list[4] = revertStr(len(source)+21)
-#     head = "".join(head_list)
-#     buffer = head + to_send
-#     hexdump(buffer)
 
-# print str("%x" % 11).decode('hex')
 if __name__ == '__main__':
     main()

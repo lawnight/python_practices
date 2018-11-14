@@ -100,7 +100,6 @@ class Struct_si():
         idx = identity & 0xf0
         if (idx == SType["UnsignedInt"].value):
             return self.readUnsignedInt(identity)
-        
 
     def readInt(self,identity):
         value = 0
@@ -133,6 +132,13 @@ class Struct_si():
         temp = struct.pack('H',value)
         value = struct.unpack('h',temp)
         return value[0]
+    def readUnsignedShort(self,identity):
+        value = 0
+        for i in range(2):
+            if (self.hasValue(identity, i)): 
+                # data = data + self.buf.readByte()
+                value |= ((self.buf.readByte()[0] & 0xff) << (i << 3))
+        return value
 
     def readString(self,identity):
         length = self.readUnsignedInt(identity)
@@ -164,6 +170,8 @@ class Struct_si():
         temp = struct.pack('I',value)
         value = struct.unpack('i',temp)
         return value[0]
+    def readBool(self,identity):
+        return self.hasValue(identity,0)
     def read(self):
         identity = self.getIdentity()       
         data = {}
@@ -172,22 +180,28 @@ class Struct_si():
             value = ''
             if idx==SType['Int'].value:           
                 value = self.readInt(identity)
-            if idx==SType['Map'].value:
+            elif idx==SType['Boolean'].value:
+                value = self.readBool(identity)
+            elif idx==SType['Map'].value:
                 value = self.readSMap(identity)                
-            if idx==SType['UnsignedInt'].value:
+            elif idx==SType['UnsignedInt'].value:
                 value =  self.readUnsignedInt(identity)
-            if idx==SType['List'].value:
+            elif idx==SType['List'].value:
                 value =  self.readList(identity)
-            if idx==SType['String'].value:
+            elif idx==SType['String'].value:
                 value = self.readString(identity)  
-            if idx==SType['Long'].value:
+            elif idx==SType['Long'].value:
                 value =  self.readLong(identity)
-            if idx==SType['Short'].value:
-                value =  self.readShort(identity)    
-            if idx==SType['Float'].value:
+            elif idx==SType['Short'].value:
+                value =  self.readShort(identity) 
+            elif idx==SType['UnsignedShort'].value:
+                value = self.readUnsignedShort(identity)
+            elif idx==SType['Float'].value:
                 value =  self.readFloat(identity) 
-            if idx==SType['Byte'].value:
-                value =  self.readByte(identity)        
+            elif idx==SType['Byte'].value:
+                value =  self.readByte(identity)
+            else:
+                print('未定义的标示',idx)        
             data[SType(idx).name] = value
             return value
     def show(self):
@@ -216,7 +230,7 @@ class Session():
             seq = getIntByIndex(buffer, 2)            
             datalen = packetLen - headLen         
                
-            print("msgId:",msgId,"len:",packetLen,"seq:",seq) 
+            # print("msgId:",msgId,"len:",packetLen,"seq:",seq) 
             source = buffer[headLen:(datalen + headLen)]
             # 返回完整的包
             return Packet(msgId,packetLen,buffer[0:headLen] + source,time)
@@ -238,8 +252,10 @@ class Session():
         buf = decode_buf(p.buf,self.randKey,p.compressType)                
         # 解析si的具体信息
         source = buf[headLen::]
+        if settings.dump:
+            hexdump(buf)
         if len(source)>0:
-            show_si(source)
+            show_si(buf)
         
     def show_brife(self):
         data = [",".join([str(x.msgId),str(x.seq)]) for x in self.pkts]
