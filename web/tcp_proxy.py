@@ -80,9 +80,9 @@ def main():
     # setup local listening parameters
     local_host = '0.0.0.0'  # sys.argv[1]
     
-    remote_host = '114.116.11.81'
-    # remote_host = '192.168.2.207'
-    port = 20011
+    # remote_host = '114.116.11.81'
+    remote_host = '192.168.2.207'
+    port = 10001
     remote_port = local_port= port
 
     proxy_thread = threading.Thread(target=proxy,args=(local_host,local_port,remote_host,remote_port))

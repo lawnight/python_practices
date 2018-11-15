@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 # 分析si协议包。
-# todolist:1：部分不常用si协议类型没实现  4：输出美观
 from scapy.all import *
 import pyshark
 import settings
