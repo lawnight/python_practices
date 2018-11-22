@@ -79,7 +79,6 @@ def proxy_handler(client_socket,addr, remote_host, remote_port, receive_first):
 def main():
     # setup local listening parameters
     local_host = '0.0.0.0'  # sys.argv[1]
-    
     # remote_host = '114.116.11.81'
     remote_host = '192.168.2.207'
     port = 10001
@@ -118,7 +117,7 @@ def proxy(local_host,local_port,remote_host,remote_port):
         proxy_thread.start()
 
 
-# python3 修改茜色
+# python3 修改协议
 def request_handler(cIp,cPort,dIp, dPort,buffer):
     se,pkts = si.receive(cIp,cPort,dIp,dPort,buffer)   
     result = b'' 
@@ -135,8 +134,8 @@ def processBR(pkt,randKey):
         temp = bytearray(o_data)
         key = b'\x51\x01'                
         # print('find',re.findall(key,temp))
+        # 修改最后的1变成-1
         pos = temp.rfind(key)
-        # 1变成-1
         temp =temp[:pos] + temp[pos:].replace(key,b'\x5f\xff\xff\xff\xff')
         si.show_si(temp)                
         to_send = si.encode_buf(bytes(temp), randKey)

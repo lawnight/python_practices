@@ -18,9 +18,7 @@ request_info = OrderedDict([
     ('5B' , '190192e4-7734-44fd-8e53-cfd9e4bfe198')
     ])
 
-
 careBuild = request_info.values()
-
 data={'cityId':'1',
 'tal':'ANDROID',
 'tal_id' : '902558776994568',
@@ -28,34 +26,21 @@ data={'cityId':'1',
 'communityId' : '13715'}
 
 
-
 def getValueByKey(key,buildList):
     for build in buildList:
         if build['buildingId']==key:
             return build['saleAmount']
 
-
-
-
-
-
-
-
-
 def getInfo():
-        
     context = requests.post('http://mobileapi.funi.com/m/community/buildingAmount.json',data=data)
     obj = json.loads(context.text)
     buildList = obj['data']
-
     info=OrderedDict()
     info['community'] = '蓝光T-Max'
     for key,value in request_info.items():
         value = getValueByKey(value,buildList)
         if value:
             info[key] = value
-    
-
     #总成交数
     context = requests.get('http://mobileapi.funi.com/m/community/hotSale.json?tal_id=902558776994568&tal=ANDROID&cityId=1')
     obj = json.loads(context.content.decode('utf-8'))
@@ -63,10 +48,7 @@ def getInfo():
     info['totalArea'] =  obj['data']['totalArea'].encode('utf-8')
     info['infoDate'] =  obj['data']['date'].encode('utf-8')
     info['totalPrice'] =  obj['data']['totalPrice'].encode('utf-8')
-
     info['date'] = getTime()
-
-
     writeCsv(fileName,info)
 
 

@@ -45,19 +45,17 @@ for item in os.listdir(path):
 
     end = datetime.datetime.now()
     print('cost:', (end - begin))
+#     array = []
+#     length = len(array)
+
+#     for i in range(0,length,page):
+#         reader = array[i:i+page]
+#         collection.bulk_write([InsertOne(row) for row in reader])
 
 
-                #     array = []
-                #     length = len(array)
+# break
 
-                #     for i in range(0,length,page):
-                #         reader = array[i:i+page]
-                #         collection.bulk_write([InsertOne(row) for row in reader])
-
-              
-                # break
-
-                # table = pd.read_csv('1-200W.csv',nrows=2)
-                # print(table.columns)
-                # print(table.Name)
-                #
+# table = pd.read_csv('1-200W.csv',nrows=2)
+# print(table.columns)
+# print(table.Name)
+#
