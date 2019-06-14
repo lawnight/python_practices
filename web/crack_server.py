@@ -1,3 +1,4 @@
+# 让百日服务器crack。
 import socket
 import hexdump
 import binascii

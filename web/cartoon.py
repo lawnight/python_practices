@@ -1,5 +1,5 @@
 # -*- coding: UTF-8 -*-
-##新闻的抓取
+# 漫画抓取 ，requestheader中传入cookie 免除登陆
 import json
 import csv
 import datetime
@@ -26,8 +26,6 @@ import browser_cookie3
 cj = browser_cookie3.load('www.xoiof.com')
 cj2={'Hm_lvt_2731e0269cd08158974f8e0d8a366836':'1548289309','wordpress_test_cookie':'WP+Cookie+check', 'Hm_lpvt_2731e0269cd08158974f8e0d8a366836':'1548343294'
 }
-
-headers =  {'User-Agent':'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36'}
 
 
 headers = {
@@ -67,6 +65,7 @@ def getImage(num,sNum,url):
     if len(next)>1:
         getImage(num,sNum+1,next)
     pass
+
 import threading
 for i,url in enumerate(urls):
     idx = i+21

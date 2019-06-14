@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-#通过tcp代理，修改游戏发送到服务器的协议，包括协议的解码，编码
+# 通过tcp代理，修改游戏发送到服务器的协议，包括协议的解码，编码
 import sys
 import socket
 import threading
