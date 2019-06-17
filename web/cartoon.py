@@ -1,5 +1,5 @@
 # -*- coding: UTF-8 -*-
-# 漫画抓取 ，requestheader中传入cookie 免除登陆
+# 漫画抓取 ，requestheader中传入cookie 免除登陆  (资源已经被下架)
 import json
 import csv
 import datetime
@@ -8,6 +8,7 @@ from lxml import etree
 import requests
 import random
 
+# 一页内20话
 urls = []
 xpath = r'//*[@id="index_ajax_list"]'
 url = 'http://www.xoiof.com/h-mate/page_3.html'
