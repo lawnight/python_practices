@@ -9,5 +9,3 @@ app = Flask(__name__,static_folder=r'D:\code\python_practices\html',static_url_p
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0',port=5005)
-
-
