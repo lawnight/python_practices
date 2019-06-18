@@ -9,7 +9,20 @@ import json
 from scrapy.exporters import CsvItemExporter
 import re
 import os.path
+import scrapy
+from scrapy.pipelines.images import ImagesPipeline
 
+
+
+class ImageNamePipeline(ImagesPipeline):
+
+    def get_media_requests(self, item, info):
+        # use 'accession' as name for the image when it's downloaded
+        return [scrapy.Request(x, meta={'image_name': i}) for i,x in enumerate(item.get('image_urls', []))]
+
+    # write in current folder using the name we chose before
+    def file_path(self, request, response=None, info=None):
+        return '{}.jpg'.format(request.meta['image_name'])
 
 class ScrapySpiderPipeline(object):
     def process_item(self, item, spider):
@@ -103,3 +116,5 @@ class SelfCsvPipeline(object):
                 print(ex)
 
             return item
+
+

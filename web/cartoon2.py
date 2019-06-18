@@ -1,4 +1,5 @@
 # -*- coding: UTF-8 -*-
+# h mate 抓取
 import json
 import csv
 import datetime
@@ -10,7 +11,7 @@ import logging
 
 # 每话 url
 entry = r'https://mangapark.net/manga/h-mate'
-urls = [] 
+urls = {} 
 
 def mainPage():
     xpath = r'//*[@id="stream_6"]/div[2]/ul'
@@ -20,8 +21,9 @@ def mainPage():
     a = html.xpath(xpath)[0]
     for elm in a.findall('li'):
         url = elm.find('.//a[@class="ml-1 visited ch"]')
-        url = url.attrib['href']
-        urls.append(url)
+        url = entry + url.attrib['href']
+        chapter = url.text
+        urls[chapter] = url
         logging.info(url)
     
     
@@ -35,7 +37,7 @@ def get_section(url):
     for i in range(1,20):
         new_url = url[0:-1] + str(i)
         print('start process',new_url)
-        data = requests.get(new_url,timeout = 10)
+        data = requests.get(new_url,timeout = 20)
         if data.status_code != 200:
             break
         d = data.text
@@ -48,6 +50,9 @@ def get_section(url):
             break
     return section_img
 
+t = entry + '/manga/h-mate/i1610072/1'
+img = get_section(t)
+logging.info('fff'+img)
 
 if __name__ == '__main__':
     logging.basicConfig(
@@ -56,6 +61,10 @@ if __name__ == '__main__':
         format = '%(asctime)s %(levelname)s %(message)s'
     )
     logging.getLogger().addHandler(logging.StreamHandler())
-    
+
     logging.info('start')
     mainPage()
+
+    for k,v in urls.items():
+        imgs = get_section(v)
+        logging.info(k + imgs)

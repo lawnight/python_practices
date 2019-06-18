@@ -54,8 +54,6 @@ class MaillistSpider(scrapy.Spider):
 
         content = response.selector.xpath("//div[contains(@class,'mt20 p20 gary_box')]").extract_first()
         local_content = content
-   
-        
 
         if key_words in local_content:
             

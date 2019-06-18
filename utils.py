@@ -35,3 +35,8 @@ def sendMail(subject,msg):
     print("msg",msg)
     print(smtpObj.sendmail('nearisl@163.com', 'nearisl@163.com',message.as_string()))
     smtpObj.quit()
+
+
+from scrapy.utils.project import get_project_settings
+c= get_project_settings()
+print(c.attributes)

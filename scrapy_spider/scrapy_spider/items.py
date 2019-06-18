@@ -63,6 +63,13 @@ class Stock(scrapy.Item):
     value = scrapy.Field()
 
 
+class HmateItem(scrapy.Item):
+
+    image_names = scrapy.Field()
+    floder = scrapy.Field()
+    image_urls = scrapy.Field()
+    images = scrapy.Field()
+
     
 
 

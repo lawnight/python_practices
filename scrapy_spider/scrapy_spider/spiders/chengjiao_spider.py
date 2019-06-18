@@ -19,6 +19,10 @@ class chengjiaoSpider(scrapy.Spider):
     name = "chengjiao"
     content = ""
 
+    custom_settings = {
+        'SOME_SETTING': 'some value',
+    }
+
     def start_requests(self):
         url = r'http://www.cdfgj.gov.cn/SCXX/Default.aspx'
         try:

@@ -67,8 +67,11 @@ ROBOTSTXT_OBEY = True
 
 # number is priority 
 ITEM_PIPELINES = {
-   'scrapy_spider.pipelines.SelfCsvPipeline': 300,
+   'scrapy_spider.pipelines.ImageNamePipeline': 1
 }
+
+IMAGES_STORE = r'D:\image'
+
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See http://doc.scrapy.org/en/latest/topics/autothrottle.html
