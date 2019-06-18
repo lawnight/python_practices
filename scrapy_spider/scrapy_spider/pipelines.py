@@ -18,11 +18,11 @@ class ImageNamePipeline(ImagesPipeline):
 
     def get_media_requests(self, item, info):
         # use 'accession' as name for the image when it's downloaded
-        return [scrapy.Request(x, meta={'image_name': i}) for i,x in enumerate(item.get('image_urls', []))]
+        return [scrapy.Request(x, meta={'image_name': i,'floder':item['floder']}) for i,x in enumerate(item.get('image_urls', []))]
 
     # write in current folder using the name we chose before
     def file_path(self, request, response=None, info=None):
-        return '{}.jpg'.format(request.meta['image_name'])
+        return '/{}/{}.jpg'.format(request.meta['floder'],request.meta['image_name'])
 
 class ScrapySpiderPipeline(object):
     def process_item(self, item, spider):

@@ -25,7 +25,7 @@ class hmate(scrapy.Spider):
           
             new_url = self.root_url + url + ">" # >代表一页显示所有图片                 
             self.log('start process:'+new_url)
-            return scrapy.Request(new_url, self.section_parse,meta={'name':chapter})
+            yield scrapy.Request(new_url, self.section_parse,meta={'name':chapter})
             
 
     def section_parse(self, response):
