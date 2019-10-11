@@ -57,10 +57,10 @@ def parse_file(story_path):
         
         df = pd.DataFrame(table)
         df = df.T             
-        #df.to_csv(os.path.join(fpath,story_path+'.csv'))
+        df.to_csv(os.path.join(fpath,story_path+'.csv'))
         return table
 
-#parse_file("story_module_select_info_table.data")
+parse_file("story_module_select_info_table.data")
 
 
 storyFiles = [name for name in os.listdir(fpath) if fnmatch(name,'story_module_story_info_table_*.data')]

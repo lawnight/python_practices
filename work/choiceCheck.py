@@ -20,9 +20,7 @@ t = t[t['小节分类'] == 'READ']
 read_choice = t
 
 
-
-def decodeFile(story_path):
-    
+def decodeFile(story_path):    
     with open(story_path,'rb') as f:
         text = f.read()
         original = xxtea.decrypt(text,key,False)
@@ -43,8 +41,6 @@ def decodeFile(story_path):
 # 选项index表
 f = decodeFile(os.path.join(r'D:\code\war_mix_server\client\Documents\reading_story','story_module_select_info_table.data'))
 f.index = pd.to_numeric(f.index)
-f = f.replace('',np.nan)
-f = f.dropna()
 
 
 def getChoiceByStroyId(storyId):
@@ -55,14 +51,17 @@ def getChoiceByStroyId(storyId):
     # t = pd.read_csv(file)
     
     c =  t['select_info_ids']
+    c = c.replace('',np.nan)
+    c = c.dropna()
     choices = defaultdict(list)
 
     if not c.empty:
         for i,choice in enumerate(c,1):
             choice_index = choice.split('|')
             data = []
+            #print('转换选项id',choice,storyId)
             for index in choice_index:
-                choice = f.iloc[int(index)]['value']  
+                choice = f.iloc[int(index)-1]['value']  
                 data.append(choice)    
             choices[i] = data
     return choices
@@ -74,8 +73,9 @@ def applyItem(x):
     sectionId = x['小节ID']  
 
     choices = getChoiceByStroyId(storyId)
-    print('check choice',sectionId,choices)
-    choiceConfig(sectionId,choices)
+    if len(choices)>0:
+        #print('check choice',sectionId,choices)
+        choiceConfig(sectionId,choices)
 
 
 
@@ -91,13 +91,15 @@ def choiceConfig(sectionId,choice):
     t = read_choice[read_choice['所属小节(话)ID']==sectionId]
     for groupId,grouped in t.groupby('选项组别序号'):
         ids = choice[groupId]
-        ids2 = list(grouped['选择ID'])
+        ids2 = [int(x) for x in list(grouped['选择ID'])]
         ids.sort()
         ids2.sort()
         if ids ==ids2 :
-            print('选项相等',sectionId,ids,ids2)
+            #print('选项相等',ids,ids2,'sectionId',sectionId)
+            pass
         else:
-            print('选项不等',sectionId,ids,ids2)
+
+            print('选项配置和客服端不一致 <{} -- {}> sectionId:{}'.format(ids,ids2,sectionId))
 
 
 # x = pd.merge(t1,t,left_on='剧本',right_on='所属小节(话)ID',how='right')
