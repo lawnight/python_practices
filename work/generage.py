@@ -1,3 +1,5 @@
+
+# 讲大数据字段说明.xml 生成java对应的类
 from lxml import etree
 
 obj = etree.parse(r'/Users/near/Downloads/log (2).xml')

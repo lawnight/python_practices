@@ -36,4 +36,3 @@ class hmate(scrapy.Spider):
             if result: 
                 urls = [x.replace('\\','') for x in result]
                 return HmateItem(image_urls =urls ,image_names = list(range(1,len(urls))) ,floder = response.meta['name'] )
-                # return {'file_urls':[x.replace('\\','') for x in result]}

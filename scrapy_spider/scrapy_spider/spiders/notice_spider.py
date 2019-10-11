@@ -13,10 +13,7 @@ from scrapy.http import HtmlResponse
 #key_words = u"红树湾"
 # u"关于中央第五环境保护督察组"
 key_words = u"中和"
-
-
 scrapy_url = 'http://www.cdht.gov.cn/zwgktzgg/index_%d.jhtml'
-
 
 class NoticeSpider(scrapy.Spider):
     name = "notice"

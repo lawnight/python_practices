@@ -1,5 +1,9 @@
 # -*- coding: UTF-8 -*-
 ##蓝光每日成交抓取
+#透明网的抓取，最先通过web网页，先通过burp suite来分析协议。需要在设置中开启对amf的支持。
+#发现amf的交互，都做了加密。需要破解swf文件。难度大，
+# 最后发现android手机直接用post请求获得信息，而且没有加密。得到post地址。
+#透明网的抓取
 import requests
 import json
 import csv
@@ -19,11 +23,13 @@ request_info = OrderedDict([
     ])
 
 careBuild = request_info.values()
+
 data={'cityId':'1',
 'tal':'ANDROID',
 'tal_id' : '902558776994568',
 'buildingIdArray' : ','.join(careBuild),
-'communityId' : '13715'}
+'communityId' : '13715'
+}
 
 
 def getValueByKey(key,buildList):

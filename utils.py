@@ -33,10 +33,20 @@ def sendMail(subject,msg):
     smtpObj.ehlo()
     smtpObj.login('nearisl@163.com', 'jiangtao12')
     print("msg",msg)
-    print(smtpObj.sendmail('nearisl@163.com', 'nearisl@163.com',message.as_string()))
+    smtpObj.sendmail('nearisl@163.com', 'nearisl@163.com',message.as_string())
     smtpObj.quit()
 
 
-from scrapy.utils.project import get_project_settings
-c= get_project_settings()
-print(c.attributes)
+
+def convert2Map(text):
+    '''
+    把chrome拷贝下来的hearder字符串转换成map的形式，给requests使用
+    '''
+    header = {}
+    for line in text.splitlines():
+        if line:
+            k,v = line.split(': ')
+            header[k.strip()] = v.strip()
+    return header
+
+sendMail('test','这是一封测试邮件2')

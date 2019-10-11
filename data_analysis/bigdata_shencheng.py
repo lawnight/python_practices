@@ -1,28 +1,3 @@
-# import pandas  as pd
-#
-# file = pd.ExcelFile("SectionConfig.xlsx")
-# t = file.parse('话配置', )
-# t = t[['小节ID', '剧本']]
-# t = t[3::]
-#
-# t1 = t
-#
-# file = pd.ExcelFile("ChoiceSetting.xlsx")
-# t = file.parse('小节(话)选项配置', skiprows=1)
-# t = t[['选择ID', '所属小节(话)ID']]
-# t = t[4::]
-#
-# x = pd.merge(t1,t,left_on='剧本',right_on='所属小节(话)ID',how='right')
-#
-# x.drop(['所属小节(话)ID','剧本'],axis=1)
-#
-# file = pd.ExcelFile("ChoiceConfig.xlsx")
-# t = file.parse('选择表')
-# t = t[3::]
-#
-# x = pd.merge(x,t,left_on='选择ID',right_on='选择ID',how='outer',indicator=True)
-# x['_merge'].value_counts()
-
 
 # 检查对应关系
 
