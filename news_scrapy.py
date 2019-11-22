@@ -4,8 +4,9 @@ import requests
 import json
 import csv
 import datetime
-from utils import *
-from bs4 import BeautifulSoup
+#from utils import *
+from lxml import etree
+
 
 baseUrl = r'http://paperpost.people.com.cn/all-rmrb-%02d-%02d-%02d.html'
 def getInfo():
@@ -13,9 +14,16 @@ def getInfo():
     month = datetime.datetime.now().month
     day = datetime.datetime.now().day
     url = baseUrl % (year,month,day)
+
+
+    xpath = '/html/body/div[1]/div/div[1]/div[7]/div'
+    
    
     data = requests.get(url)
-    soup = BeautifulSoup(data.text, 'lxml')
+    html = etree.HTML(data.text)
+    root = html.xpath(xpath)    
+    return root
 
-    result = soup.find('div').get_text()
-    return result
+
+
+print(getInfo())

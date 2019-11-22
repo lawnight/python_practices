@@ -1,3 +1,4 @@
+<!-- 点击站点，画出经过该站点的所有公交线路 -->
 <html>
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -8,7 +9,7 @@
 	</style>
     <link href="http://cdn.bootcss.com/bootstrap/3.3.2/css/bootstrap.min.css" rel="stylesheet">
 	<script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=y7I42kWI1lRqTPmv2l5SOBU8"></script>
-	<title>公交/地铁线路查询</title>
+	<title>画出公交站</title>
 </head>
 <body>
 	<div class="container">
@@ -16,13 +17,13 @@
 			<div class="col-md-4" style="margin-top:20px;">
 				<div>
 					<div class="form-group">
-					    <label for="keyword">请输入公交站名，如：“西单”：</label>
-					    <input type="text" class="form-control" id="keyword" placeholder="公交站名"  value="西单"/>
+					    <label for="keyword">请输入公交站名，如：“江滩公园”：</label>
+					    <input type="text" class="form-control" id="keyword" placeholder="公交站名"  value="江滩公园"/>
 					</div>
 					<div class="form-group">
-					    <label for="location">请输入城市名，如北京（仅作参考，如搜索泉城广场时，北京没有这个地址，一样会找到济南，但如果北京也有，就不会找济南了）：</label>
+					    <label for="location">请输入城市名，如成都（仅作参考，如搜索泉城广场时，北京没有这个地址，一样会找到济南，但如果北京也有，就不会找济南了）：</label>
 					    <div class="row">
-					    	<div class="col-md-9"><input type="text" class="form-control" id="location" placeholder="城市名" value="北京"/></div>
+					    	<div class="col-md-9"><input type="text" class="form-control" id="location" placeholder="城市名" value="成都"/></div>
 					    	<div class="col-md-3"><button id="query" class="btn btn-default">查询</button></div>
 					    </div>
 					</div>
@@ -53,7 +54,7 @@
 	var infoWindow = new BMap.InfoWindow("");
 	var currentLocation;
 
-	map.centerAndZoom(new BMap.Point(116.404, 39.915), 15);
+	map.centerAndZoom(new BMap.Point(104.088, 30.559), 16);
 	map.enableScrollWheelZoom();
 
 	var activePolyline;			// hover bus line
@@ -89,6 +90,7 @@
 		});
 		map.addOverlay(marker);
 		stationList.push(marker);
+
 	}
 
 	function removeCircles() {
@@ -133,6 +135,9 @@
 			var busStation = busline.getBusStation(i);
 			addCircle(busline, busStation);
 		}
+
+		//标注是多少路公交		
+		console.log(busline.name)
 	}
 
 	function searchComplete(result) {

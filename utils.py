@@ -49,4 +49,4 @@ def convert2Map(text):
             header[k.strip()] = v.strip()
     return header
 
-sendMail('test','这是一封测试邮件2')
+#sendMail('test','这是一封测试邮件2')

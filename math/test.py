@@ -27,14 +27,18 @@ plt.show()
 
 #%%
 import math
-X=np.linspace(0,10,10)
+import matplotlib.pyplot as plt
+#首先定义两个函数（正弦&余弦）
+import numpy as np
+x=np.linspace(0,2,100)
 
-Y = 10 + np.power(4,X-1)
+Y = (1+x)/x
 
-plt.plot(X,Y)
+plt.plot(x,Y)
 # plt.xlim([0,1000])
 # plt.ylim([0,1000])
 plt.show() 
 
 
 #%%
+
