@@ -22,3 +22,6 @@ ITEM_PIPELINES = {
 
 # 下载图片的保存路径
 IMAGES_STORE = r'D:\image'
+
+# save info
+info_path = r'e:\1.csv'

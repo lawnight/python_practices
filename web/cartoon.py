@@ -78,3 +78,5 @@ for i,url in enumerate(urls):
     
     t =threading.Thread(target=getImage,args=(idx,1,url))
     t.start()
+#%%
+print('hel')

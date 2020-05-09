@@ -119,18 +119,49 @@ class SelfCsvPipeline(object):
 
 #for economy spider
 import csv
+import datetime
+
+
+postData = {
+  "appToken":"AT_8T4nKJGFO0ou8s13ZuEoDP6b8o6dPOkC",
+  "content":"默认消息",
+  "summary":"默认消息",
+  "contentType":1,
+  
+  "uid":["UID_eIVknzhI7hBbIzCtHXkNsoRMFKHF"],
+}
+
+headers = {
+   "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.100 Safari/531.36",
+   "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3",   
+   "Content-Type":"application/json",
+   "Connection": "keep-alive",
+}
+
+# %%
+import requests
+def sendWeChart(title):
+   sendMsg_url = 'http://wxpusher.zjiecode.com/api/send/message'
+   postData['summary'] = title
+   requests.get(sendMsg_url,headers=headers,params=postData)
+   
+
+
 class economyPipeline(object):
-    filePath = 'economy.csv'
-    header = ['gold']   
+    
+    header = ['date','gold','silver']
+    filePath = r'e:\1.csv'    
 
     def open_spider(self, spider):
-        self.f = open(self.filePath,'w+')
-        self.csv_f = csv.DictWriter(self.f,self.header)
+        print('open file',self.filePath)
+        self.f = open(self.filePath,'a')        
     def process_item(self, item, spider):
         if spider.name == 'economy':
             try:
                 print('economyPipeline',item)
-                self.csv_f.writerow(item)
+                item['date'] = datetime.datetime.now().strftime('%Y-%m-%d %H:%M')                
+                self.f.write(','.join([item[x] for x in self.header])+'\n')
+                sendWeChart("黄金{}，白银{} {}".format(item['gold'],item['silver'],item['date']))
             except Exception as ex:
                 print(ex)
             return item

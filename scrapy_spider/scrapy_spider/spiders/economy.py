@@ -16,6 +16,7 @@ class economy(scrapy.Spider):
     def parse(self, response):        
         gold = response.xpath('//*[@id="mainbox"]/div[2]/div[5]/table/tbody/tr[2]/td[2]/text()').get()        
         silver = response.xpath('//*[@id="mainbox"]/div[2]/div[5]/table/tbody/tr[3]/td[2]/text()').get()
+        open_gold = response.xpath('//*[@id="mainbox"]/div[2]/div[5]/table/tbody/tr[3]/td[5]/text()').get()
         data =  {'gold':gold,'silver':silver}
         print(data)
         yield data

@@ -68,7 +68,3 @@ class HmateItem(scrapy.Item):
     floder = scrapy.Field()
     image_urls = scrapy.Field()
     images = scrapy.Field()
-
-    
-
-

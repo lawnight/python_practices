@@ -24,6 +24,4 @@ def getInfo():
     root = html.xpath(xpath)    
     return root
 
-
-
 print(getInfo())

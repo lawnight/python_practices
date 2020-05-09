@@ -26,8 +26,9 @@ def getStock():
         return ''
    
 
-def analysis():
 
+
+def analysis():
     with open('saleInfo.csv') as csvfile:
         reader = csv.DictReader(csvfile)
         dqu = deque(reader, 2)
@@ -50,4 +51,7 @@ def analysis():
 
             msg = '\n'.join([utils.getTime(), getWearth(),getStock(),str1, str2])
 
-            utils.sendMail('我的资讯',msg )
+            #utils.sendMail('我的资讯',msg )
+            return msg
+
+print(analysis())

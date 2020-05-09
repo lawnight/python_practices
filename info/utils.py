@@ -16,7 +16,7 @@ def writeCsv(name,info):
     if  os.path.isfile(name):
         need_header = False
         
-    with open(name, 'ab') as csvfile:
+    with open(name, 'a') as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         if need_header:
             writer.writeheader()
@@ -24,7 +24,8 @@ def writeCsv(name,info):
 
 def sendMail(subject,msg):
     """ 发送邮件
-    :param subject: 主题
+    subject: 主题
+    msg: 内容
     """
     message = MIMEText(msg, 'plain', 'utf-8')
     message['Subject'] = Header(subject, 'utf-8')
@@ -50,10 +51,3 @@ def convert2Map(text):
     return header
 
 #sendMail('test','这是一封测试邮件2')
-
-
-## 微信web端已经不能使用，wxpy库不能用了
-import win32api
-#print(time.gmtime(getTime()))
-year,month,wday = 2020,10,1
-win32api.SetSystemTime(year,month,wday,wday,13,1,1,0)
