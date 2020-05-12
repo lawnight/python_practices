@@ -50,3 +50,10 @@ def convert2Map(text):
     return header
 
 #sendMail('test','这是一封测试邮件2')
+
+
+## 微信web端已经不能使用，wxpy库不能用了
+import win32api
+#print(time.gmtime(getTime()))
+year,month,wday = 2020,10,1
+win32api.SetSystemTime(year,month,wday,wday,13,1,1,0)

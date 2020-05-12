@@ -10,6 +10,7 @@ import csv
 from utils import *
 
 
+
 fileName = 'saleInfo.csv'
 
 from collections import OrderedDict

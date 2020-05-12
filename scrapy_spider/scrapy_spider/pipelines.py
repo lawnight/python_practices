@@ -117,4 +117,25 @@ class SelfCsvPipeline(object):
 
             return item
 
+#for economy spider
+import csv
+class economyPipeline(object):
+    filePath = 'economy.csv'
+    header = ['gold']   
+
+    def open_spider(self, spider):
+        self.f = open(self.filePath,'w+')
+        self.csv_f = csv.DictWriter(self.f,self.header)
+    def process_item(self, item, spider):
+        if spider.name == 'economy':
+            try:
+                print('economyPipeline',item)
+                self.csv_f.writerow(item)
+            except Exception as ex:
+                print(ex)
+            return item
+    def close_spider(self, spider):
+        if self.f:
+            self.f.flush()
+            self.f.close()
 

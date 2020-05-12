@@ -1,11 +1,13 @@
 # -*- coding: UTF-8 -*-
+# %%
 import requests
 import re
 import json
 from utils import *
+from lxml import etree
 
 
-def getInfo():
+def getWeather():
     url = r"https://tianqi.2345.com/t/map_js/china.js?_=1518315957850"
     context = requests.get(url)
     content = context.content.decode('utf-8')
@@ -26,5 +28,17 @@ def getInfo():
 
     return info
 
+
+def getGlod():
+    url = r'http://gold.hexun.com/hjxh/'
+    c = requests.get(url)
+    html = etree.HTML(c.text)
+    d = html.xpath('//*[@id="mainbox"]/div[2]/div[5]/table/tbody/tr[3]/td[2]')
+    return d[0].text
+
+
+
 if __name__ == '__main__':
-    print(getInfo())
+    print(getGlod())
+
+# %%
