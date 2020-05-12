@@ -11,8 +11,10 @@ class hmate(scrapy.Spider):
     name = "hmate"
     content = ""
 
-    start_ulrs = [r'https://mangapark.net/manga/h-mate']
-
+    root_url = r'https://mangapark.net/manga/h-mate'
+    def start_requests(self):
+        
+        yield scrapy.Request(url=self.root_url, callback=self.page_parse)
 
     def page_parse(self, response):
         xpath = r'//*[@id="stream_6"]/div[2]/ul'
