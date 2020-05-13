@@ -159,9 +159,8 @@ class economyPipeline(object):
         if spider.name == 'economy':
             try:
                 print('economyPipeline',item)
-                item['date'] = datetime.datetime.now().strftime('%Y-%m-%d %H:%M')                
+                item['date'] = datetime.datetime.now().strftime('%Y-%m-%d')                
                 self.f.write(','.join([item[x] for x in self.header])+'\n')
-                sendWeChart("黄金{}，白银{} {}".format(item['gold'],item['silver'],item['date']))
             except Exception as ex:
                 print(ex)
             return item
@@ -169,4 +168,13 @@ class economyPipeline(object):
         if self.f:
             self.f.flush()
             self.f.close()
+
+class sendMsg(object):
+    def process_item(self, item, spider):
+        if spider.name == 'economy':
+            try:
+                sendWeChart("黄金{}，白银{} {}".format(item['gold'],item['silver'],item['date']))
+            except Exception as ex:
+                print(ex)
+            return item
 
