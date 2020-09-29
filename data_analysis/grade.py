@@ -4,7 +4,10 @@ path = r'D:\资料\公务员'
 key1 = '行政职业能力测验成绩'
 key2 = '申论成绩'
 #%%
-def filterPosition(df,full = True,role = '2020年高校应届毕业生和符合职位要求的社会在职、非在职人员'):
+def filterPosition(df,role = '2020年高校应届毕业生和符合职位要求的社会在职、非在职人员',full = True,):
+    """
+    过滤满足条件的职位    
+    """
      # 满足我的招录条件
     grade = '本科及以上'
     perfession = '计算机'
@@ -23,6 +26,11 @@ def mergePosition(df,df2):
     return df3
 
 def analysisLocation(a1,a2,key1 = 'sum',key2 = '名额'):
+    """
+    根据地点（招录机关）统计分数段
+    key1:笔试分数
+    key2:招录人数
+    """
 
     b1 = a1.groupby('招录机关').agg({key1:['max','min','mean'],key2:['sum']})
     b2 = a2.groupby('招录机关').agg({key1:['max','min','mean'],key2:['sum']})
@@ -32,8 +40,8 @@ def analysisLocation(a1,a2,key1 = 'sum',key2 = '名额'):
 df = pd.read_excel(os.path.join(path,'2018年上.xls'),skiprows=1)
 df2 = pd.read_excel(os.path.join(path,'2018年下职位.xlsx'),skiprows=2)
 df3 = mergePosition(df,df2)
-a1 = filterPosition(df,True,'2018年高校应届毕业生和符合职位要求的社会在职、非在职人员|具有两年以上基层工作经历的人员')
-a2 = filterPosition(df,False,'2018年高校应届毕业生和符合职位要求的社会在职、非在职人员|具有两年以上基层工作经历的人员')
+a1 = filterPosition(df3,'2018年高校应届毕业生和符合职位要求的社会在职、非在职人员|具有两年以上基层工作经历的人员',True)
+a2 = filterPosition(df3,'2018年高校应届毕业生和符合职位要求的社会在职、非在职人员|具有两年以上基层工作经历的人员',False)
 analysisLocation(a1,a2,key1 = '笔试总成绩',key2= '录用名额')
 # %%
 
@@ -50,12 +58,11 @@ def analysis(df,key1,key2):
     c = pd.DataFrame([a_series,b_series],index=['a','b'])
     # 去掉为0的项
     c = c.loc[:, (c != 0).any(axis=0)]
-    #c.plot(kind='bar',stacked=True)
- 
+    #c.plot(kind='bar',stacked=True) 
     c_series.plot(kind='pie',autopct='%1.1f%%')
 
 #%%
 # %%
-d = r'D:\资料\公务员\2017年遂宁市检察系统招录公务员成绩汇总排名统计表.xls'
-df = pd.read_excel(d)
-analysis(df,key1,key2)
+# d = r'D:\资料\公务员\2017年遂宁市检察系统招录公务员成绩汇总排名统计表.xls'
+# df = pd.read_excel(d)
+# analysis(df,key1,key2)
