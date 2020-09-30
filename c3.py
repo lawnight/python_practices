@@ -1,37 +1,75 @@
-# Created with Python AI
+count=0
+def solution(input,visited):
+    result = []
+    global count
+    for i in range(1,10):
+        copyInput = input.copy()
+        if(attempAdd(copyInput,i)):
+            for head in getHead(copyInput):
+                for j in range(0,len(visited)):
+                    visited[j] = 0
+                for h in head:
+                    visited[h] = 1  
+                count = 0                  
+                if DFS_visit(copyInput,{},visited) == True:
+                    result.append(i)
+                    break
+    return result
+def getHead(input):
+    result = []
+    last = 0
+    count =1 
+    for k,i in enumerate( input):
+        if i>last:
+            last = i
+            count =1
+        elif i==last:
+            count = count +1
+            if count ==2:
+                result.append([k-1,k])
+    return result
 
 
+def attempAdd(input,i):
+    count =0
+    for index,j in enumerate( input):
+        if j==i:
+            count = count +1
+        if j>i: 
+            if count==4:
+                return False
+            else:
+                input.insert(index,i)
+                return True
+    
+    input.append(i)
+    return True
 
-input = [ 1, 1, 2, 2, 3, 3, 5, 6, 7, 7, 8, 9]
-remain = []
 
-dock = [0]*9
-for i in range(9):
-    for j in range(4):        
-        dock[i] = dock[i] + 1
-
-
-
-parent = {}
-count = 0
 def DFS_visit(input,cur,visitied):
     #lefts = removeHead(input)
     # 先找出三个
     global count
-    if count == 12:
-        print('success',visited)
-        return
+    if count == 12:  
+        #print('success',visited)     
+        return True
     result = find(input,visitied)
     for i in result:
         for k in i:          
             visitied[k] = 1
         count = count +3
-        DFS_visit(input,cur,visitied)       
+        if count == 12:
+            #print('success',visited)
+            return True
+        DFS_visit(input,cur,visitied)    
+        if count ==12:
+            return True
         for k in i:
             visitied[k] = 0
         count = count -3
-    if len(result)==0 and count == 9:
-        print('failed',visited)
+    #if len(result)==0 and count == 9:
+        #print('failed',visited)
+    return False
 
 def find(data,visited):
     r = [] # 所有可能remove data的方法 2维数组
@@ -65,10 +103,7 @@ def findSeq(data,visited):
         if count == 3:            
             result.append(temp)
     return result
-            
-           
-                      
-        
+          
 def findTri(data,visited):
     d = 0
     count = 0
@@ -85,29 +120,13 @@ def findTri(data,visited):
             count = 0
     return result
 
-visited = [0]*len(input)
 
-print(findTri(input,visited))
-print(findSeq(input,visited))
-print('find:',find(input,visited))
+data = [3 ,3 ,3 ,4 ,4, 4 ,6 ,6 ,6 ,8, 8, 9 ,9]
 
-DFS_visit(input,{},visited)
-    
-# m中选n个
-def getCombination(data,m,n):
-    result = []
-    for i in m:
-        for j in range(n,m):
-            result.append()
+#data = list(map(int, input().split()))
+visited = [0]*14
 
-
-def removeHead(d):
-    pass
-
-def removeStructure(left):
-    pass
-
-#only can take another
-
-# if has pair ,添加顺子或者三个。都可以组成和牌。
-# 回溯法n
+data.sort()
+result = solution(data,visited)
+for x in result:
+    print(x,end=" ")    
