@@ -10,7 +10,7 @@
   "author": "near",
   "license": "ISC",
   "devDependencies": {
-    "webpack": "^3.10.0"
+    "webpack": "^5.79.0"
   },
   "dependencies": {
     "echarts": "^3.8.5",
